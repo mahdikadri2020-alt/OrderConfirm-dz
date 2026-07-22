@@ -49,12 +49,22 @@ export default function App() {
   const [authMode, setAuthMode] = useState('login');
   const [currentUser, setCurrentUser] = useState(null);
 
-  // App Data State
-  const [merchant, setMerchant] = useState(initialMockState.merchant);
-  const [orders, setOrders] = useState(initialMockState.orders);
-  const [templates, setTemplates] = useState(initialMockState.templates);
-  const [apiKeys, setApiKeys] = useState(initialMockState.apiKeys);
-  const [subscription, setSubscription] = useState(initialMockState.subscription);
+  // App Data State (Initialized empty for real live Supabase merchant data)
+  const [merchant, setMerchant] = useState({
+    business_name: 'Boutique Marchande',
+    phone: '',
+    status: 'active',
+    plan: 'débutant'
+  });
+  const [orders, setOrders] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [apiKeys, setApiKeys] = useState([]);
+  const [subscription, setSubscription] = useState({
+    plan_name: 'Débutant',
+    orders_limit: 1000,
+    orders_used: 0,
+    current_period_end: '2026-08-30'
+  });
 
   // Admin Data State
   const [adminMerchants, setAdminMerchants] = useState(mockAdminMerchants);
@@ -766,6 +776,10 @@ export default function App() {
     );
   }
 
+  const handleLoadDemoData = () => {
+    setOrders(generateMockOrders());
+  };
+
   // RENDER APP VIEWS
   if (view === 'app') {
     return (
@@ -786,6 +800,7 @@ export default function App() {
               orders={orders}
               onSelectTab={setActiveDashboardTab}
               onOpenAddOrder={() => setActiveDashboardTab('orders')}
+              onLoadDemoData={handleLoadDemoData}
             />
           )}
 

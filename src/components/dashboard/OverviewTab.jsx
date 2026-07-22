@@ -16,7 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export default function OverviewTab({ orders = [], onSelectTab, onOpenAddOrder }) {
+export default function OverviewTab({ orders = [], onSelectTab, onOpenAddOrder, onLoadDemoData }) {
   // Real dynamic calculations from merchant's scoped orders
   const totalOrders = orders.length;
   const confirmedOrders = useMemo(() => orders.filter(o => o.status === 'confirmed').length, [orders]);
@@ -127,6 +127,29 @@ export default function OverviewTab({ orders = [], onSelectTab, onOpenAddOrder }
 
   return (
     <div className="space-y-6 font-body">
+      
+      {/* Real Data Live Status Badge Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-background p-4 rounded-2xl border border-border/80 shadow-2xs">
+        <div className="flex items-center gap-2.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs font-heading font-extrabold text-foreground">
+            Données Réelles en Direct (Supabase Live DB)
+          </span>
+          <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
+            {totalOrders} Commande(s) Réelle(s)
+          </span>
+        </div>
+
+        {totalOrders === 0 && onLoadDemoData && (
+          <button
+            onClick={onLoadDemoData}
+            className="text-xs font-heading font-bold text-muted-foreground hover:text-accent flex items-center gap-1.5 transition-colors"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+            <span>Charger des données de démonstration (Exemple)</span>
+          </button>
+        )}
+      </div>
       
       {/* Welcome / Status Alert Banner */}
       {totalOrders === 0 ? (
