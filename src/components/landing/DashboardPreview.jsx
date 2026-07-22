@@ -26,8 +26,9 @@ import {
 
 export default function DashboardPreview() {
   return (
-    <div className="w-full text-[11px] select-none pointer-events-none font-body text-foreground bg-background/95 rounded-xl shadow-2xl overflow-hidden border border-border/80">
-      {/* Top bar */}
+    <div className="w-full text-[11px] select-none pointer-events-none font-body text-foreground bg-background/95 rounded-xl shadow-2xl overflow-x-auto border border-border/80">
+      <div className="min-w-[680px] md:min-w-0 w-full">
+        {/* Top bar */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/60 bg-background/80">
         <div className="flex items-center gap-2">
           <LogoIcon size={24} className="h-6 w-auto shrink-0" />
@@ -328,6 +329,7 @@ export default function DashboardPreview() {
                 </tbody>
               </table>
             </div>
+          </div>
           </div>
         </div>
       </div>

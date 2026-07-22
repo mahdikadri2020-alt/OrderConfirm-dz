@@ -29,8 +29,10 @@
     @apply border-border;
   }
   
-  body {
+  html, body {
     @apply bg-background text-foreground font-body antialiased selection:bg-accent selection:text-white;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 }
 

@@ -55,33 +55,33 @@ export default function PricingSection({ onGoToApp }) {
   ];
 
   return (
-    <section id="pricing" className="w-full py-20 px-6 md:px-12 lg:px-20 bg-background border-t border-border/50">
+    <section id="pricing" className="w-full py-12 sm:py-16 md:py-24 px-4 sm:px-8 md:px-12 lg:px-20 bg-background border-t border-border/50">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-xs font-semibold uppercase tracking-wider text-accent bg-accent/10 px-3 py-1 rounded-full">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+          <span className="text-[11px] sm:text-xs font-heading font-bold uppercase tracking-wider text-accent bg-accent/10 px-3 py-1 rounded-full">
             Tarifs Transparents
           </span>
-          <h2 className="font-display text-4xl md:text-5xl text-foreground mt-4 tracking-tight">
-            Des forfaits simples adaptés à votre <span className="italic">volume de ventes</span>
+          <h2 className="font-heading font-extrabold text-2xl sm:text-4xl md:text-5xl text-foreground mt-3 sm:mt-4 tracking-tight">
+            Des forfaits simples adaptés à votre <span className="font-display italic font-normal text-accent">volume de ventes</span>
           </h2>
-          <p className="mt-4 text-muted-foreground text-base">
+          <p className="mt-3 sm:mt-4 font-body text-muted-foreground text-xs sm:text-base leading-relaxed">
             Aucun frais caché. Rentabilité garantie dès les 50 premières commandes confirmées.
           </p>
 
           {/* Monthly / Annual Toggle */}
-          <div className="mt-8 inline-flex items-center gap-3 bg-secondary p-1.5 rounded-full border border-border">
+          <div className="mt-6 sm:mt-8 inline-flex items-center gap-2 sm:gap-3 bg-secondary p-1.5 rounded-full border border-border">
             <button
               onClick={() => setAnnual(false)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                !annual ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
+              className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-heading font-bold transition-all ${
+                !annual ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground'
               }`}
             >
               Mensuel
             </button>
             <button
               onClick={() => setAnnual(true)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1 ${
-                annual ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
+              className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-heading font-bold transition-all flex items-center gap-1 ${
+                annual ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground'
               }`}
             >
               <span>Annuel</span>
@@ -93,34 +93,34 @@ export default function PricingSection({ onGoToApp }) {
         </div>
 
         {/* Plan Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
           {plans.map((plan, idx) => (
             <div
               key={idx}
-              className={`rounded-3xl p-8 flex flex-col justify-between transition-all relative ${
+              className={`rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all relative ${
                 plan.popular
-                  ? 'bg-background border-2 border-accent shadow-xl scale-105 z-10'
-                  : 'bg-background border border-border/80 hover:border-accent/40 shadow-sm'
+                  ? 'bg-background border-2 border-accent shadow-xl md:scale-105 z-10'
+                  : 'bg-background border border-border/80 hover:border-accent/40 shadow-xs'
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-accent text-white px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase shadow-md flex items-center gap-1">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-accent text-white px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-heading font-bold tracking-wide uppercase shadow-md flex items-center gap-1 whitespace-nowrap">
                   <Sparkles className="h-3 w-3" /> Le plus populaire
                 </div>
               )}
 
               <div>
-                <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
-                <p className="text-xs text-muted-foreground mt-2 min-h-[36px]">{plan.description}</p>
+                <h3 className="text-lg sm:text-xl font-heading font-bold text-foreground">{plan.name}</h3>
+                <p className="text-xs text-muted-foreground mt-2 min-h-[32px] sm:min-h-[36px]">{plan.description}</p>
 
-                <div className="mt-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold tracking-tight text-foreground">{plan.price}</span>
-                  <span className="text-sm text-muted-foreground font-medium">{plan.period}</span>
+                <div className="mt-5 sm:mt-6 flex items-baseline gap-1">
+                  <span className="text-3xl sm:text-4xl font-heading font-extrabold tracking-tight text-foreground">{plan.price}</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground font-medium">{plan.period}</span>
                 </div>
 
-                <div className="w-full h-px bg-border/60 my-6" />
+                <div className="w-full h-px bg-border/60 my-5 sm:my-6" />
 
-                <ul className="space-y-3">
+                <ul className="space-y-2.5 sm:space-y-3">
                   {plan.features.map((feat, fIdx) => (
                     <li key={fIdx} className="flex items-start gap-2.5 text-xs text-foreground/90">
                       <div className="h-4 w-4 rounded-full bg-accent/15 text-accent flex items-center justify-center shrink-0 mt-0.5">
@@ -134,10 +134,10 @@ export default function PricingSection({ onGoToApp }) {
 
               <button
                 onClick={onGoToApp}
-                className={`mt-8 w-full py-3 rounded-full text-xs font-semibold transition-all ${
+                className={`mt-6 sm:mt-8 w-full py-3 rounded-full text-xs font-heading font-bold transition-all ${
                   plan.popular
                     ? 'bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs'
                 }`}
               >
                 {plan.cta}

@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Sparkles, X } from 'lucide-react';
 import DashboardPreview from './DashboardPreview';
+import MobileDashboardPreview from './MobileDashboardPreview';
 
 export default function Hero({ onOpenAuth, onGoToApp }) {
   const [showDemoVideo, setShowDemoVideo] = useState(false);
 
   return (
-    <div id="hero" className="relative w-full flex-1 flex flex-col items-center justify-between pt-2 pb-6 px-4 md:px-8 overflow-hidden z-10">
+    <div id="hero" className="relative w-full flex-1 flex flex-col items-center justify-between pt-3 sm:pt-6 pb-6 sm:pb-12 px-3 sm:px-6 md:px-8 overflow-hidden z-10">
       {/* Background Video (Fullscreen muted loop) */}
       <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
         <video
@@ -33,11 +34,11 @@ export default function Hero({ onOpenAuth, onGoToApp }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-4 md:mb-6"
+          className="mb-2.5 sm:mb-6"
         >
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/90 backdrop-blur px-4 py-1.5 text-xs md:text-sm text-muted-foreground font-body shadow-sm hover:border-accent/40 transition-colors">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/90 backdrop-blur px-3 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs md:text-sm text-muted-foreground font-body shadow-xs text-center max-w-[92vw] truncate">
             <span>Maintenant avec support n8n & WhatsApp</span>
-            <span className="text-amber-500">✨</span>
+            <span className="text-amber-500 shrink-0">✨</span>
           </div>
         </motion.div>
 
@@ -46,7 +47,7 @@ export default function Hero({ onOpenAuth, onGoToApp }) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-center font-display text-4xl sm:text-5xl md:text-6xl lg:text-[4.75rem] leading-[0.95] tracking-tight text-foreground max-w-3xl"
+          className="text-center font-display text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.12] sm:leading-[1.02] md:leading-[0.95] tracking-tight text-foreground max-w-4xl px-1 sm:px-0"
         >
           La confirmation de commande <span className="font-display italic text-accent font-normal">intelligente</span> par WhatsApp
         </motion.h1>
@@ -56,7 +57,7 @@ export default function Hero({ onOpenAuth, onGoToApp }) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-3 md:mt-4 text-center text-sm md:text-base lg:text-lg text-muted-foreground max-w-[680px] leading-relaxed font-body"
+          className="mt-2.5 sm:mt-5 text-center text-xs sm:text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed font-body px-1 sm:px-0"
         >
           Automatisez la validation de vos commandes COD en Algérie et au Maghreb. Relancez vos clients sur WhatsApp, éliminez les annulations à la livraison et augmentez vos bénéfices.
         </motion.p>
@@ -66,11 +67,11 @@ export default function Hero({ onOpenAuth, onGoToApp }) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-4 md:mt-5 flex items-center gap-3"
+          className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto px-2 sm:px-0 max-w-xs sm:max-w-none"
         >
           <button
             onClick={() => onOpenAuth('signup')}
-            className="rounded-full px-6 py-3.5 md:py-4 text-sm font-heading font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full sm:w-auto text-center rounded-full px-6 min-h-[46px] sm:min-h-0 py-3 sm:py-4 text-xs sm:text-sm font-heading font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center"
           >
             Réserver un compte
           </button>
@@ -78,30 +79,39 @@ export default function Hero({ onOpenAuth, onGoToApp }) {
           <button
             onClick={() => setShowDemoVideo(true)}
             title="Regarder la vidéo de démonstration"
-            className="h-11 w-11 rounded-full border-0 bg-background shadow-[0_2px_12px_rgba(0,0,0,0.08)] hover:bg-background/80 flex items-center justify-center transition-all hover:scale-105 active:scale-95 group"
+            className="w-full sm:w-auto h-10 sm:h-12 px-4 sm:px-0 sm:w-12 rounded-full border border-border/80 bg-background shadow-xs hover:bg-secondary flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 group text-xs sm:text-sm font-heading font-semibold text-foreground"
           >
-            <Play className="h-4 w-4 fill-foreground text-foreground group-hover:scale-110 transition-transform ml-0.5" />
+            <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-foreground text-foreground group-hover:scale-110 transition-transform shrink-0" />
+            <span className="sm:hidden">Démo Vidéo</span>
           </button>
         </motion.div>
 
-        {/* 5. Dashboard Preview (custom coded in React) */}
+        {/* 5. Dashboard Preview (Mobile & Desktop Responsive Breakpoints) */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="mt-6 md:mt-8 w-full max-w-5xl"
+          className="mt-5 sm:mt-10 w-full max-w-5xl px-0 sm:px-2"
         >
-          <div
-            className="rounded-2xl overflow-hidden p-2 md:p-4"
-            style={{
-              background: 'rgba(255, 255, 255, 0.4)',
-              border: '1px solid rgba(255, 255, 255, 0.5)',
-              boxShadow: 'var(--shadow-dashboard)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)'
-            }}
-          >
-            <DashboardPreview />
+          {/* Mobile Dashboard Preview (< 768px) */}
+          <div className="block md:hidden">
+            <MobileDashboardPreview />
+          </div>
+
+          {/* Desktop Dashboard Preview (>= 768px) */}
+          <div className="hidden md:block">
+            <div
+              className="rounded-2xl overflow-hidden p-2 md:p-4"
+              style={{
+                background: 'rgba(255, 255, 255, 0.4)',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                boxShadow: 'var(--shadow-dashboard)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)'
+              }}
+            >
+              <DashboardPreview />
+            </div>
           </div>
         </motion.div>
       </div>

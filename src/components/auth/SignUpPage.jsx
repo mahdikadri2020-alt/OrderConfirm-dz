@@ -114,32 +114,32 @@ export default function SignUpPage({ onGoToLogin, onAuthSuccess, onGoHome }) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-4 sm:p-6 font-body text-foreground relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-3 sm:p-6 font-body text-foreground relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-background to-background pointer-events-none" />
 
       {/* Top logo & back button */}
-      <div className="w-full max-w-md flex items-center justify-between mb-6 z-10">
+      <div className="w-full max-w-md flex items-center justify-between mb-4 sm:mb-6 z-10">
         <button
           onClick={onGoHome}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" /> Retour à l'accueil
+          <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span>Accueil</span>
         </button>
 
-        <div className="flex items-center gap-2.5 cursor-pointer" onClick={onGoHome}>
-          <LogoIcon size={42} className="h-10 w-auto" />
-          <span className="text-xl font-heading font-black tracking-tight text-foreground">OrderConfirm</span>
+        <div className="flex items-center gap-2 cursor-pointer" onClick={onGoHome}>
+          <LogoIcon size={32} className="h-8 sm:h-10 w-auto" />
+          <span className="text-lg sm:text-xl font-heading font-black tracking-tight text-foreground">OrderConfirm</span>
         </div>
       </div>
 
       {/* Signup Form Card */}
-      <div className="relative w-full max-w-md bg-background rounded-3xl p-8 border border-border shadow-2xl z-10">
-        <div className="mb-6 text-center">
-          <span className="text-xs font-heading font-bold text-accent uppercase tracking-wider bg-accent/10 px-3 py-1 rounded-full">
+      <div className="relative w-full max-w-md bg-background rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-border shadow-2xl z-10">
+        <div className="mb-5 sm:mb-6 text-center">
+          <span className="text-[10px] sm:text-xs font-heading font-bold text-accent uppercase tracking-wider bg-accent/10 px-3 py-1 rounded-full">
             Inscription Gratuite
           </span>
-          <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-foreground mt-3 tracking-tight">
+          <h1 className="font-heading font-extrabold text-xl sm:text-3xl text-foreground mt-2.5 sm:mt-3 tracking-tight">
             Créer votre compte
           </h1>
           <p className="text-xs text-muted-foreground mt-1.5">
