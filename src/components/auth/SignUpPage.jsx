@@ -133,9 +133,20 @@ export default function SignUpPage({ onGoToLogin, onAuthSuccess, onGoHome }) {
 
         {/* Alerts */}
         {errorMsg && (
-          <div className="mb-5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-xs flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>{errorMsg}</span>
+          <div className="mb-5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-xs flex flex-col gap-2">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{errorMsg}</span>
+            </div>
+            {errorMsg.includes('déjà associée') && (
+              <button
+                type="button"
+                onClick={onGoToLogin}
+                className="mt-1 w-full py-2 bg-accent text-white rounded-xl text-xs font-heading font-bold hover:bg-accent/90 transition-all flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <span>Se connecter à mon compte →</span>
+              </button>
+            )}
           </div>
         )}
 

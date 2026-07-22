@@ -116,17 +116,34 @@ export default function App() {
       const fetchData = async () => {
         try {
           // 1. Fetch current merchant profile
-          const { data: merchantData } = await supabase
+          const { data: fetchedMerchant } = await supabase
             .from('merchants')
             .select('*')
             .eq('user_id', currentUser.id)
-            .single();
+            .maybeSingle();
 
-          if (merchantData) {
-            setMerchant(merchantData);
+          let activeMerchant = fetchedMerchant;
+          if (!activeMerchant) {
+            const { data: newM } = await supabase
+              .from('merchants')
+              .insert([{
+                user_id: currentUser.id,
+                business_name: currentUser.user_metadata?.business_name || 'Boutique El Bahia',
+                phone: currentUser.user_metadata?.phone || '0550000000',
+                plan: 'debutant',
+                status: 'active',
+                is_admin: currentUser.email === 'mahdi.kadri2020@gmail.com'
+              }])
+              .select('*')
+              .single();
+            activeMerchant = newM;
           }
 
-          const currentMerchantId = merchantData?.id;
+          if (activeMerchant) {
+            setMerchant(activeMerchant);
+          }
+
+          const currentMerchantId = activeMerchant?.id;
 
           if (currentMerchantId) {
             // 2. Fetch orders scoped strictly to this merchant
