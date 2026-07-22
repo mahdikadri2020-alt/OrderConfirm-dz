@@ -352,9 +352,101 @@ export default function OrdersTab({
         </div>
       </div>
 
-      {/* Orders Table */}
+      {/* Orders Container (Mobile Cards + Desktop Table) */}
       <div className="bg-background rounded-2xl border border-border/80 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        
+        {/* Mobile View: Order Cards (< 768px) */}
+        <div className="block md:hidden divide-y divide-border/60">
+          {filteredOrders.length === 0 ? (
+            <div className="p-8 text-center space-y-3">
+              <div className="h-12 w-12 rounded-2xl bg-secondary text-muted-foreground flex items-center justify-center mx-auto">
+                <ShoppingBag className="h-6 w-6" />
+              </div>
+              <h4 className="font-heading font-extrabold text-sm text-foreground">
+                {safeOrders.length === 0 ? 'Aucune commande' : 'Aucune commande trouvée'}
+              </h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {safeOrders.length === 0 
+                  ? 'Ajoutez votre première commande pour déclencher la confirmation WhatsApp.'
+                  : 'Essayez de modifier votre recherche.'}
+              </p>
+              {safeOrders.length === 0 && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="w-full py-3 bg-accent text-white rounded-full text-xs font-heading font-bold shadow-xs flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Ajouter une commande</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            filteredOrders.map((order) => (
+              <div key={order.id || `ord-mob-${Math.random()}`} className="p-4 space-y-3 bg-background hover:bg-secondary/10 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-0.5">
+                    <h4 className="font-heading font-extrabold text-sm text-foreground">{order.customer_name || 'Client Inconnu'}</h4>
+                    <span className="text-xs font-mono text-muted-foreground block">{order.customer_phone || '—'}</span>
+                  </div>
+
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-heading font-bold border shrink-0 ${
+                    order.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                    order.status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                    order.status === 'no_reply' ? 'bg-slate-500/10 text-slate-600 border-slate-500/20' :
+                    'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                  }`}>
+                    {order.status === 'confirmed' && <><CheckCircle2 className="h-3 w-3" /> Confirmé</>}
+                    {order.status === 'rejected' && <><XCircle className="h-3 w-3" /> Annulé</>}
+                    {order.status === 'pending' && <><Clock className="h-3 w-3" /> En attente</>}
+                    {order.status === 'no_reply' && <><AlertCircle className="h-3 w-3" /> Sans réponse</>}
+                  </span>
+                </div>
+
+                <div className="bg-secondary/40 rounded-xl p-2.5 flex items-center justify-between text-xs font-heading">
+                  <div>
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold block">Produit & Wilaya</span>
+                    <span className="font-bold text-foreground">{order.product || 'Produit'}</span>
+                    <span className="text-[11px] text-muted-foreground block font-normal">{order.wilaya || '—'}</span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold block">Montant</span>
+                    <span className="font-extrabold text-foreground text-sm">{Number(order.price || 0).toLocaleString()} DA</span>
+                  </div>
+                </div>
+
+                {/* Mobile Action Row */}
+                <div className="flex items-center justify-between pt-1 gap-2">
+                  <button
+                    onClick={() => setSelectedOrderMessages(order)}
+                    className="flex-1 py-2 bg-secondary text-foreground hover:bg-accent hover:text-white rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    <span>WhatsApp</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleOpenEdit(order)}
+                    className="flex-1 py-2 bg-secondary text-foreground hover:bg-blue-600 hover:text-white rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>Modifier</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleOpenDelete(order)}
+                    className="py-2 px-3 bg-secondary text-rose-600 hover:bg-rose-500 hover:text-white rounded-xl text-xs font-heading font-bold flex items-center justify-center transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table (>= 768px) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-secondary/40 border-b border-border/60 font-heading font-bold text-muted-foreground uppercase text-[10px]">
