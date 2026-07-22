@@ -66,15 +66,21 @@ export default function DashboardLayout({
             <span>Nouvelle Commande</span>
           </button>
 
-          {/* Admin Portal Quick Action Button */}
+          {/* Stealth Admin Portal Button */}
           {merchant?.is_admin && (
-            <button
-              onClick={onGoToAdmin}
-              className="w-full py-2.5 px-3 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-xs font-heading font-extrabold transition-all flex items-center justify-center gap-2 shadow-sm"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              <span>Espace Administrateur</span>
-            </button>
+            <div className="pt-1">
+              <button
+                onClick={onGoToAdmin}
+                className="w-full py-1.5 px-3 bg-secondary/80 hover:bg-indigo-500/10 text-muted-foreground hover:text-indigo-600 border border-border/60 hover:border-indigo-500/20 rounded-xl text-[11px] font-heading font-semibold transition-all flex items-center justify-between group"
+                title="Espace Administrateur (Secret)"
+              >
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-indigo-500 group-hover:scale-110 transition-transform" />
+                  <span>Espace Admin</span>
+                </div>
+                <span className="text-[9px] bg-indigo-500/10 text-indigo-600 px-1.5 py-0.2 rounded font-bold uppercase">Pro</span>
+              </button>
+            </div>
           )}
 
           {/* Navigation Links */}
