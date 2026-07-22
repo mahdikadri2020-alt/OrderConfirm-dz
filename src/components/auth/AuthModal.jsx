@@ -53,53 +53,46 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
 
     setLoading(true);
 
-    if (isSupabaseConfigured) {
-      try {
-        if (mode === 'signup') {
-          const { data, error } = await supabase.auth.signUp({
-            email: email.trim(),
-            password: password,
-            options: {
-              data: {
-                business_name: businessName.trim(),
-                phone: phone.trim()
-              }
+    try {
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password,
+          options: {
+            data: {
+              business_name: businessName.trim(),
+              phone: phone.trim()
             }
-          });
-          if (error) throw error;
+          }
+        });
+        if (error) throw error;
 
-          setSuccessMsg('Compte créé avec succès ! Redirection vers le tableau de bord...');
-          setTimeout(() => {
-            onAuthSuccess({ email: email.trim(), business_name: businessName.trim() });
-            onClose();
-          }, 1200);
-        } else {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password: password
-          });
-          if (error) throw error;
+        setSuccessMsg('Compte créé avec succès ! Redirection vers le tableau de bord...');
+        setTimeout(() => {
+          onAuthSuccess(data?.user || { email: email.trim(), business_name: businessName.trim() });
+          onClose();
+        }, 1200);
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password
+        });
+
+        if (error) throw error;
+        if (!data?.user) {
+          throw new Error('Adresse e-mail ou mot de passe incorrect.');
+        }
+
+        setSuccessMsg('Connexion réussie ! Redirection...');
+        setTimeout(() => {
           onAuthSuccess(data.user);
           onClose();
-        }
-      } catch (err) {
-        setErrorMsg(translateError(err));
-      } finally {
-        setLoading(false);
+        }, 600);
       }
-    } else {
-      // Demo Mode Instant Auth Simulation
-      setTimeout(() => {
-        setLoading(false);
-        setSuccessMsg(mode === 'signup' ? 'Compte démo créé ! Accès au tableau de bord...' : 'Connexion réussie !');
-        setTimeout(() => {
-          onAuthSuccess({
-            email: email || 'marchand@elbahia.dz',
-            business_name: businessName || 'Boutique El Bahia (Alger)'
-          });
-          onClose();
-        }, 800);
-      }, 500);
+    } catch (err) {
+      setErrorMsg(translateError(err));
+    } finally {
+      setLoading(false);
     }
   };
 

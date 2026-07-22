@@ -1,16 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const defaultSupabaseUrl = 'https://fbgblwomlrdodgegkcwl.supabase.co';
+const defaultPublishableKey = 'sb_publishable_90EC-3CYhScdXucQjD2JIQ_ONffy8cf';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || defaultSupabaseUrl;
 const supabasePublishableKey = 
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 
   import.meta.env.VITE_SUPABASE_ANON_KEY || 
-  'placeholder-key';
+  defaultPublishableKey;
 
-export const isSupabaseConfigured = Boolean(
-  import.meta.env.VITE_SUPABASE_URL && 
-  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY) &&
-  !import.meta.env.VITE_SUPABASE_URL.includes('placeholder')
-);
+export const isSupabaseConfigured = true;
 
 export const supabase = createClient(supabaseUrl, supabasePublishableKey);
 

@@ -58,58 +58,42 @@ export default function SignUpPage({ onGoToLogin, onAuthSuccess, onGoHome }) {
 
     setLoading(true);
 
-    if (isSupabaseConfigured) {
-      try {
-        // 1. Create Supabase Auth user
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password: password,
-          options: {
-            data: {
-              business_name: businessName.trim(),
-              phone: phone.trim()
-            }
-          }
-        });
-
-        if (error) throw error;
-
-        const newUser = data?.user;
-
-        if (newUser) {
-          // Merchant row, default template & subscription are created automatically by DB trigger
-          if (data?.session) {
-            setSuccessMsg('Compte créé avec succès ! Redirection vers votre tableau de bord...');
-            setTimeout(() => {
-              onAuthSuccess({
-                id: newUser.id,
-                email: newUser.email,
-                business_name: businessName.trim()
-              });
-            }, 1200);
-          } else {
-            setNeedsEmailConfirm(true);
-            setSuccessMsg('Compte créé ! Un e-mail de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.');
+    try {
+      // 1. Create Supabase Auth user
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          data: {
+            business_name: businessName.trim(),
+            phone: phone.trim()
           }
         }
-      } catch (err) {
-        setErrorMsg(translateError(err));
-      } finally {
-        setLoading(false);
+      });
+
+      if (error) throw error;
+
+      const newUser = data?.user;
+
+      if (newUser) {
+        if (data?.session) {
+          setSuccessMsg('Compte créé avec succès ! Redirection vers votre tableau de bord...');
+          setTimeout(() => {
+            onAuthSuccess({
+              id: newUser.id,
+              email: newUser.email,
+              business_name: businessName.trim()
+            });
+          }, 1200);
+        } else {
+          setNeedsEmailConfirm(true);
+          setSuccessMsg('Compte créé ! Un e-mail de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.');
+        }
       }
-    } else {
-      // Offline Demo Auth Fallback
-      setTimeout(() => {
-        setLoading(false);
-        setSuccessMsg('Compte démo créé avec succès ! Redirection vers le tableau de bord...');
-        setTimeout(() => {
-          onAuthSuccess({
-            id: 'demo-merchant-new',
-            email: email,
-            business_name: businessName
-          });
-        }, 800);
-      }, 600);
+    } catch (err) {
+      setErrorMsg(translateError(err));
+    } finally {
+      setLoading(false);
     }
   };
 
