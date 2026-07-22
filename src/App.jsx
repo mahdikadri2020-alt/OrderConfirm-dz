@@ -87,18 +87,31 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Restore Supabase Session on Mount
+  // Restore & Server-Validate Supabase Session on Mount
   useEffect(() => {
     if (isSupabaseConfigured) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          setCurrentUser(session.user);
+      // Validate token with Supabase backend server (getUser makes an API request to Supabase Auth)
+      supabase.auth.getUser().then(({ data, error }) => {
+        if (error || !data?.user) {
+          // Token is invalid, user was deleted on backend, or expired -> force logout & clear localStorage
+          supabase.auth.signOut();
+          setCurrentUser(null);
+          localStorage.clear();
+        } else {
+          setCurrentUser(data.user);
         }
       });
 
-      const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
-          setCurrentUser(session.user);
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          if (userError || !userData?.user) {
+            await supabase.auth.signOut();
+            setCurrentUser(null);
+            localStorage.clear();
+          } else {
+            setCurrentUser(userData.user);
+          }
         } else {
           setCurrentUser(null);
         }
@@ -115,6 +128,16 @@ export default function App() {
     if (isSupabaseConfigured && currentUser) {
       const fetchData = async () => {
         try {
+          // Verify user exists on backend before doing anything
+          const { data: authCheck, error: authErr } = await supabase.auth.getUser();
+          if (authErr || !authCheck?.user) {
+            await supabase.auth.signOut();
+            setCurrentUser(null);
+            localStorage.clear();
+            setView('landing');
+            return;
+          }
+
           // 1. Fetch current merchant profile
           const { data: fetchedMerchant } = await supabase
             .from('merchants')
@@ -358,6 +381,11 @@ export default function App() {
       supabase.auth.signOut();
     }
     setCurrentUser(null);
+    try {
+      localStorage.clear();
+    } catch (e) {
+      // Ignore
+    }
     setMerchant(initialMockState.merchant);
     setOrders([]);
     setApiKeys([]);
