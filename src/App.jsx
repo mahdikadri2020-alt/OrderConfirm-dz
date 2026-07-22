@@ -775,6 +775,10 @@ export default function App() {
         setActiveTab={setActiveDashboardTab}
         onLogout={handleLogout}
         onOpenAddOrder={() => setActiveDashboardTab('orders')}
+        onGoToAdmin={() => {
+          setView('admin');
+          window.history.pushState({}, '', '/admin-oc-2026');
+        }}
       >
         <ErrorBoundary>
           {activeDashboardTab === 'overview' && (

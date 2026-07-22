@@ -66,6 +66,17 @@ export default function DashboardLayout({
             <span>Nouvelle Commande</span>
           </button>
 
+          {/* Admin Portal Quick Action Button */}
+          {merchant?.is_admin && (
+            <button
+              onClick={onGoToAdmin}
+              className="w-full py-2.5 px-3 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-xs font-heading font-extrabold transition-all flex items-center justify-center gap-2 shadow-sm"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              <span>Espace Administrateur</span>
+            </button>
+          )}
+
           {/* Navigation Links */}
           <nav className="space-y-1">
             <span className="px-3 text-[10px] font-heading font-bold text-muted-foreground uppercase tracking-wider">Navigation</span>
@@ -193,6 +204,19 @@ export default function DashboardLayout({
                   <X className="h-4 w-4" />
                 </button>
               </div>
+
+              {merchant?.is_admin && (
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onGoToAdmin) onGoToAdmin();
+                  }}
+                  className="w-full py-2.5 px-3 bg-indigo-600 text-white rounded-xl text-xs font-heading font-extrabold flex items-center justify-center gap-2 shadow-xs"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Espace Administrateur</span>
+                </button>
+              )}
 
               <div className="space-y-1">
                 <span className="text-[10px] font-heading font-bold text-muted-foreground uppercase tracking-wider">Navigation</span>
