@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   User,
-  Shield
+  Shield,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function DashboardLayout({ 
