@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/landing/Navbar';
 import Hero from './components/landing/Hero';
 import FeaturesSection from './components/landing/FeaturesSection';
+import PricingSection from './components/landing/PricingSection';
 import Footer from './components/landing/Footer';
 import AuthModal from './components/auth/AuthModal';
 import SignUpPage from './components/auth/SignUpPage';
@@ -983,6 +984,7 @@ export default function App() {
 
       {/* Additional Marketing Content Sections */}
       <FeaturesSection onGoToApp={() => setView('inscription')} />
+      <PricingSection onGoToApp={() => setView('inscription')} />
       <Footer onGoToApp={() => setView('app')} />
 
       {/* Auth Modal (Inscription / Connexion) */}

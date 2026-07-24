@@ -157,6 +157,16 @@ export default function AccountStatusPage({ merchant, user, onLogout }) {
                   <span className="font-heading font-medium text-foreground">{email}</span>
                 </div>
               </div>
+
+              <div className="flex items-center gap-2 sm:col-span-2 pt-1 border-t border-border/60">
+                <ShieldAlert className="h-4 w-4 text-emerald-600 shrink-0" />
+                <div>
+                  <span className="text-[10px] text-muted-foreground block uppercase font-heading font-bold">Formule & Tarif d'abonnement</span>
+                  <span className="font-heading font-extrabold text-emerald-600 text-xs">
+                    Formule Pro Marchand — 9 500 DA / mois
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
