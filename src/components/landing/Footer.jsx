@@ -28,6 +28,17 @@ export default function Footer({ onGoToApp }) {
           <a href="#features" className="hover:text-foreground transition-colors">Fonctionnalités</a>
           <a href="#pricing" className="hover:text-foreground transition-colors">Tarifs</a>
           <button onClick={onGoToApp} className="hover:text-foreground transition-colors">Tableau de bord</button>
+          <a 
+            href="/admin-oc-2026" 
+            onClick={(e) => {
+              e.preventDefault();
+              window.history.pushState({}, '', '/admin-oc-2026');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors font-normal"
+          >
+            Espace partenaire
+          </a>
         </div>
       </div>
     </footer>

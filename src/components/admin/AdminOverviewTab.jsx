@@ -24,12 +24,13 @@ export default function AdminOverviewTab({
   merchants = [], 
   platformStats = {}, 
   onToggleMerchantStatus, 
-  onChangeMerchantPlan 
+  onChangeMerchantPlan,
+  onRenewMerchant
 }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'suspended'
-  const [planFilter, setPlanFilter] = useState('all'); // 'all' | 'Débutant' | 'Pro Marchand' | 'Enterprise'
-  const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest' | 'orders'
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'suspended' | 'pending_approval' | 'expired'
+  const [planFilter, setPlanFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('newest');
   
   const [selectedMerchant, setSelectedMerchant] = useState(null);
 
@@ -277,24 +278,29 @@ export default function AdminOverviewTab({
               <tr className="bg-secondary/50 border-b border-border/80 font-heading font-bold text-muted-foreground uppercase text-[10px] tracking-wider">
                 <th className="py-3.5 px-4">Boutique & Email</th>
                 <th className="py-3.5 px-4">Téléphone</th>
-                <th className="py-3.5 px-4">Date d'inscription</th>
-                <th className="py-3.5 px-4">Plan</th>
-                <th className="py-3.5 px-4">Statut</th>
+                <th className="py-3.5 px-4">Plan & Statut</th>
+                <th className="py-3.5 px-4">Début Abonnement</th>
+                <th className="py-3.5 px-4">Fin Abonnement</th>
                 <th className="py-3.5 px-4 text-right">Commandes</th>
-                <th className="py-3.5 px-4 text-right">Taux Conf.</th>
-                <th className="py-3.5 px-4 text-center">Action</th>
+                <th className="py-3.5 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60 font-body">
               {filteredMerchants.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-muted-foreground text-xs">
+                  <td colSpan={7} className="py-12 text-center text-muted-foreground text-xs">
                     Aucun marchand ne correspond à votre recherche.
                   </td>
                 </tr>
               ) : (
                 filteredMerchants.map((merchant) => {
                   const isSuspended = merchant.status === 'suspended';
+                  const isPending = merchant.status === 'pending_approval';
+
+                  const daysLeft = merchant.subscription_end 
+                    ? Math.ceil((new Date(merchant.subscription_end) - new Date()) / (1000 * 60 * 60 * 24))
+                    : null;
+                  const isExpired = (daysLeft !== null && daysLeft <= 0) || merchant.status === 'expired';
 
                   return (
                     <tr
@@ -329,29 +335,56 @@ export default function AdminOverviewTab({
                         {merchant.phone || '—'}
                       </td>
 
-                      {/* Signup Date */}
-                      <td className="py-3.5 px-4 text-muted-foreground">
-                        {merchant.created_at ? new Date(merchant.created_at).toLocaleDateString('fr-FR') : 'Récent'}
-                      </td>
-
-                      {/* Plan */}
-                      <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-heading font-bold bg-secondary text-foreground border border-border">
+                      {/* Plan & Status */}
+                      <td className="py-3.5 px-4 space-y-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-heading font-bold bg-secondary text-foreground border border-border">
                           <Crown className="h-3 w-3 text-amber-500" />
                           {merchant.plan || 'Débutant'}
                         </span>
+
+                        <div>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-heading font-bold border ${
+                            isPending
+                              ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                              : isSuspended
+                              ? 'bg-rose-500/10 text-rose-600 border-rose-500/20'
+                              : isExpired
+                              ? 'bg-orange-500/10 text-orange-600 border-orange-500/20'
+                              : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                          }`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${
+                              isPending ? 'bg-amber-500' : isSuspended ? 'bg-rose-500' : isExpired ? 'bg-orange-500' : 'bg-emerald-500'
+                            }`} />
+                            {isPending ? 'En attente' : isSuspended ? 'Suspendu' : isExpired ? 'Expiré' : 'Actif'}
+                          </span>
+                        </div>
                       </td>
 
-                      {/* Status */}
+                      {/* Subscription Start */}
+                      <td className="py-3.5 px-4 text-muted-foreground text-[11px]">
+                        {merchant.subscription_start ? new Date(merchant.subscription_start).toLocaleDateString('fr-FR') : '—'}
+                      </td>
+
+                      {/* Subscription End & Days Left Flag */}
                       <td className="py-3.5 px-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-heading font-bold border ${
-                          isSuspended
-                            ? 'bg-rose-500/10 text-rose-600 border-rose-500/20'
-                            : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                        }`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${isSuspended ? 'bg-rose-500' : 'bg-emerald-500'}`} />
-                          {isSuspended ? 'Suspendu' : 'Actif'}
-                        </span>
+                        <div className="space-y-0.5">
+                          <span className="font-heading font-semibold text-foreground block text-[11px]">
+                            {merchant.subscription_end ? new Date(merchant.subscription_end).toLocaleDateString('fr-FR') : '—'}
+                          </span>
+                          {merchant.subscription_end && (
+                            <div>
+                              {isExpired ? (
+                                <span className="inline-block px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[9px] font-heading font-bold animate-pulse">
+                                  Expiré (Action requise)
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-mono text-emerald-600 font-bold">
+                                  {daysLeft} jours restants
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </td>
 
                       {/* Total Orders */}
@@ -359,20 +392,27 @@ export default function AdminOverviewTab({
                         {merchant.total_orders || 0}
                       </td>
 
-                      {/* Confirmation Rate */}
-                      <td className="py-3.5 px-4 text-right font-heading font-bold text-accent">
-                        {merchant.confirmation_rate || 0}%
-                      </td>
-
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => setSelectedMerchant(merchant)}
-                          className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                          title="Voir détails du marchand"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          {onRenewMerchant && (
+                            <button
+                              onClick={() => onRenewMerchant(merchant.id)}
+                              title="Renouveler l'abonnement (+1 mois)"
+                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-[10px] transition-colors flex items-center gap-1 shadow-2xs"
+                            >
+                              <span>Renouveler</span>
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => setSelectedMerchant(merchant)}
+                            className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                            title="Voir détails du marchand"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

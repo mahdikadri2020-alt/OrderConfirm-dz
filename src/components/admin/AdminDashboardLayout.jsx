@@ -17,18 +17,27 @@ import {
 } from 'lucide-react';
 import { LogoIcon } from '../common/Logo';
 
+import { Clock } from 'lucide-react';
+
 export default function AdminDashboardLayout({ 
   adminUser, 
   activeTab, 
   setActiveTab, 
   onLogout, 
   onSwitchToMerchantApp, 
+  pendingCount = 0,
   children 
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
     { id: 'overview', label: 'Vue d\'ensemble', icon: <Home className="h-4 w-4" /> },
+    { 
+      id: 'pending', 
+      label: 'Demandes en attente', 
+      icon: <Clock className="h-4 w-4 text-amber-500" />,
+      badge: pendingCount > 0 ? pendingCount : null
+    },
     { id: 'merchants', label: 'Gestion Marchands', icon: <Users className="h-4 w-4" /> },
     { id: 'admins', label: 'Administrateurs', icon: <ShieldCheck className="h-4 w-4 text-indigo-500" /> },
     { id: 'orders', label: 'Commandes Globales', icon: <ShoppingBag className="h-4 w-4" /> },
@@ -76,14 +85,23 @@ export default function AdminDashboardLayout({
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-heading font-semibold transition-all ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-heading font-semibold transition-all ${
                       isActive
                         ? 'bg-primary text-primary-foreground shadow-xs'
                         : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                     }`}
                   >
-                    {item.icon}
-                    <span>{item.label}</span>
+                    <div className="flex items-center gap-3">
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
                   </button>
                 );
               })}

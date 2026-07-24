@@ -12,6 +12,9 @@ import TemplatesTab from './components/dashboard/TemplatesTab';
 import SettingsTab from './components/dashboard/SettingsTab';
 import ApiKeysTab from './components/dashboard/ApiKeysTab';
 
+import AccountStatusPage from './components/auth/AccountStatusPage';
+import AdminPendingMerchantsTab from './components/admin/AdminPendingMerchantsTab';
+
 // Admin Components & Mock Data
 import AdminDashboardLayout from './components/admin/AdminDashboardLayout';
 import AdminOverviewTab from './components/admin/AdminOverviewTab';
@@ -157,6 +160,7 @@ export default function App() {
 
           let activeMerchant = fetchedMerchant;
           if (!activeMerchant) {
+            const isUserAdmin = currentUser.email === 'mahdi.kadri2020@gmail.com';
             const { data: newM } = await supabase
               .from('merchants')
               .insert([{
@@ -164,12 +168,29 @@ export default function App() {
                 business_name: currentUser.user_metadata?.business_name || 'Boutique El Bahia',
                 phone: currentUser.user_metadata?.phone || '0550000000',
                 plan: 'debutant',
-                status: 'active',
-                is_admin: currentUser.email === 'mahdi.kadri2020@gmail.com'
+                status: isUserAdmin ? 'active' : 'pending_approval',
+                is_admin: isUserAdmin,
+                subscription_start: isUserAdmin ? new Date().toISOString() : null,
+                subscription_end: isUserAdmin ? new Date(Date.now() + 365 * 86400000).toISOString() : null
               }])
               .select('*')
               .single();
             activeMerchant = newM;
+          }
+
+          // Check if active subscription has expired
+          if (
+            activeMerchant && 
+            activeMerchant.status === 'active' && 
+            !activeMerchant.is_admin && 
+            activeMerchant.subscription_end && 
+            new Date(activeMerchant.subscription_end) < new Date()
+          ) {
+            activeMerchant.status = 'expired';
+            await supabase
+              .from('merchants')
+              .update({ status: 'expired' })
+              .eq('id', activeMerchant.id);
           }
 
           if (activeMerchant) {
@@ -670,6 +691,71 @@ export default function App() {
     }
   };
 
+  const handleApproveMerchant = async (merchantId) => {
+    const nowISO = new Date().toISOString();
+    const endISO = new Date(Date.now() + 30 * 86400000).toISOString();
+
+    setAdminMerchants((prev) =>
+      prev.map((m) =>
+        m.id === merchantId
+          ? { ...m, status: 'active', subscription_start: nowISO, subscription_end: endISO }
+          : m
+      )
+    );
+
+    if (isSupabaseConfigured && currentUser) {
+      await supabase
+        .from('merchants')
+        .update({
+          status: 'active',
+          subscription_start: nowISO,
+          subscription_end: endISO
+        })
+        .eq('id', merchantId);
+    }
+  };
+
+  const handleRejectMerchant = async (merchantId) => {
+    setAdminMerchants((prev) =>
+      prev.map((m) =>
+        m.id === merchantId
+          ? { ...m, status: 'rejected' }
+          : m
+      )
+    );
+
+    if (isSupabaseConfigured && currentUser) {
+      await supabase
+        .from('merchants')
+        .update({ status: 'rejected' })
+        .eq('id', merchantId);
+    }
+  };
+
+  const handleRenewMerchant = async (merchantId) => {
+    const nowISO = new Date().toISOString();
+    const endISO = new Date(Date.now() + 30 * 86400000).toISOString();
+
+    setAdminMerchants((prev) =>
+      prev.map((m) =>
+        m.id === merchantId
+          ? { ...m, status: 'active', subscription_start: nowISO, subscription_end: endISO }
+          : m
+      )
+    );
+
+    if (isSupabaseConfigured && currentUser) {
+      await supabase
+        .from('merchants')
+        .update({
+          status: 'active',
+          subscription_start: nowISO,
+          subscription_end: endISO
+        })
+        .eq('id', merchantId);
+    }
+  };
+
   // RENDER ADMIN DASHBOARD VIEW (/admin-oc-2026)
   if (view === 'admin') {
     // Check security: user must be admin or viewing hidden path in demo mode
@@ -703,12 +789,15 @@ export default function App() {
       );
     }
 
+    const pendingMerchants = adminMerchants.filter((m) => m.status === 'pending_approval');
+
     return (
       <AdminDashboardLayout
         adminUser={currentUser || { email: 'admin@orderconfirm.dz' }}
         activeTab={activeAdminTab}
         setActiveTab={setActiveAdminTab}
         onLogout={handleLogout}
+        pendingCount={pendingMerchants.length}
         onSwitchToMerchantApp={() => {
           setView('app');
           window.history.pushState({}, '', '/app');
@@ -721,6 +810,15 @@ export default function App() {
               platformStats={platformStats}
               onToggleMerchantStatus={handleToggleMerchantStatus}
               onChangeMerchantPlan={handleChangeMerchantPlan}
+              onRenewMerchant={handleRenewMerchant}
+            />
+          )}
+
+          {activeAdminTab === 'pending' && (
+            <AdminPendingMerchantsTab
+              pendingMerchants={pendingMerchants}
+              onApproveMerchant={handleApproveMerchant}
+              onRejectMerchant={handleRejectMerchant}
             />
           )}
 
@@ -730,6 +828,7 @@ export default function App() {
               platformStats={platformStats}
               onToggleMerchantStatus={handleToggleMerchantStatus}
               onChangeMerchantPlan={handleChangeMerchantPlan}
+              onRenewMerchant={handleRenewMerchant}
             />
           )}
 
@@ -780,8 +879,21 @@ export default function App() {
     setOrders(generateMockOrders());
   };
 
-  // RENDER APP VIEWS
+  // RENDER APP VIEWS (WITH STATUS ROUTE GATING)
   if (view === 'app') {
+    const isUserAdmin = merchant?.is_admin || currentUser?.is_admin || Boolean(currentUser?.user_metadata?.is_admin) || currentUser?.email === 'mahdi.kadri2020@gmail.com';
+    const isMerchantActive = merchant?.status === 'active';
+
+    if (currentUser && !isUserAdmin && !isMerchantActive) {
+      return (
+        <AccountStatusPage
+          merchant={merchant}
+          user={currentUser}
+          onLogout={handleLogout}
+        />
+      );
+    }
+
     return (
       <DashboardLayout
         merchant={merchant}
