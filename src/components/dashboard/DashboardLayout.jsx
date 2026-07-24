@@ -21,14 +21,17 @@ import {
 } from 'lucide-react';
 
 export default function DashboardLayout({ 
-  merchant, 
+  merchant = {}, 
   activeTab, 
   setActiveTab, 
   onLogout, 
   onOpenAddOrder, 
+  onGoToAdmin,
   children 
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const businessName = merchant?.business_name || 'Boutique Marchande';
 
   const menuItems = [
     { id: 'overview', label: 'Vue d\'ensemble', icon: <Home className="h-4 w-4" /> },
@@ -52,7 +55,7 @@ export default function DashboardLayout({
                 OrderConfirm
               </div>
               <span className="text-xs font-body text-muted-foreground block truncate max-w-[140px]">
-                {merchant.business_name}
+                {businessName}
               </span>
             </div>
           </div>
@@ -138,7 +141,7 @@ export default function DashboardLayout({
             </div>
             <div className="text-left">
               <span className="text-xs font-bold text-foreground block truncate max-w-[110px]">
-                {merchant.business_name}
+                {businessName}
               </span>
               <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> WhatsApp Lié
@@ -163,7 +166,7 @@ export default function DashboardLayout({
           <div>
             <div className="font-heading font-black text-foreground text-sm tracking-tight leading-none">OrderConfirm</div>
             <span className="text-[10px] text-muted-foreground block truncate max-w-[120px] font-body mt-0.5">
-              {merchant.business_name}
+              {businessName}
             </span>
           </div>
         </div>
@@ -197,7 +200,7 @@ export default function DashboardLayout({
                     DZ
                   </div>
                   <div>
-                    <h4 className="font-heading font-extrabold text-xs text-foreground truncate max-w-[150px]">{merchant.business_name}</h4>
+                    <h4 className="font-heading font-extrabold text-xs text-foreground truncate max-w-[150px]">{businessName}</h4>
                     <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> WhatsApp Lié
                     </span>
