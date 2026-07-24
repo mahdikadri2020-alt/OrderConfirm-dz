@@ -396,9 +396,16 @@ export default function App() {
       setMerchant((prev) => ({ ...prev, business_name: user.business_name }));
     }
     
-    // Check if user navigated to admin path or has admin role
+    // Check if user navigated to admin path, email is primary admin, or has admin metadata
     const currentPath = window.location.pathname.toLowerCase();
-    if (currentPath.includes('admin-oc-2026') || user?.is_admin || user?.user_metadata?.is_admin) {
+    const isAdminUser = 
+      currentPath.includes('admin-oc-2026') || 
+      user?.email === 'mahdi.kadri2020@gmail.com' ||
+      user?.is_admin || 
+      user?.user_metadata?.is_admin ||
+      merchant?.is_admin;
+
+    if (isAdminUser) {
       setView('admin');
       window.history.pushState({}, '', '/admin-oc-2026');
     } else {
