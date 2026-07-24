@@ -244,7 +244,7 @@ export default function App() {
               });
             } else {
               setSubscription({
-                plan_name: merchantData?.plan || 'Débutant',
+                plan_name: activeMerchant?.plan || 'Débutant',
                 orders_limit: 1000,
                 orders_used: ordersData?.length || 0,
                 current_period_end: '2026-08-15'
@@ -264,7 +264,7 @@ export default function App() {
           }
 
           // 6. If admin, fetch all platform-wide resources using admin view and relations
-          if (merchantData?.is_admin) {
+          if (activeMerchant?.is_admin) {
             try {
               // 6a. Merchants with email view
               const { data: merchantsWithEmailData } = await supabase
