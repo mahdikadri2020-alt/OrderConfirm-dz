@@ -879,77 +879,89 @@ export default function App() {
     setOrders(generateMockOrders());
   };
 
-  // RENDER APP VIEWS (WITH STATUS ROUTE GATING)
+  // RENDER APP VIEWS (WITH DEFENSIVE STATUS ROUTE GATING)
   if (view === 'app') {
-    const isUserAdmin = merchant?.is_admin || currentUser?.is_admin || Boolean(currentUser?.user_metadata?.is_admin) || currentUser?.email === 'mahdi.kadri2020@gmail.com';
-    const isMerchantActive = merchant?.status === 'active';
+    const safeMerchant = merchant || {};
+    const merchantStatus = safeMerchant.status || 'pending_approval';
+
+    const isUserAdmin = 
+      Boolean(safeMerchant.is_admin) || 
+      Boolean(currentUser?.is_admin) || 
+      Boolean(currentUser?.user_metadata?.is_admin) || 
+      currentUser?.email === 'mahdi.kadri2020@gmail.com';
+
+    const isMerchantActive = merchantStatus === 'active';
 
     if (currentUser && !isUserAdmin && !isMerchantActive) {
       return (
-        <AccountStatusPage
-          merchant={merchant}
-          user={currentUser}
-          onLogout={handleLogout}
-        />
+        <ErrorBoundary>
+          <AccountStatusPage
+            merchant={safeMerchant}
+            user={currentUser}
+            onLogout={handleLogout}
+          />
+        </ErrorBoundary>
       );
     }
 
     return (
-      <DashboardLayout
-        merchant={merchant}
-        activeTab={activeDashboardTab}
-        setActiveTab={setActiveDashboardTab}
-        onLogout={handleLogout}
-        onOpenAddOrder={() => setActiveDashboardTab('orders')}
-        onGoToAdmin={() => {
-          setView('admin');
-          window.history.pushState({}, '', '/admin-oc-2026');
-        }}
-      >
-        <ErrorBoundary>
-          {activeDashboardTab === 'overview' && (
-            <OverviewTab
-              orders={orders}
-              onSelectTab={setActiveDashboardTab}
-              onOpenAddOrder={() => setActiveDashboardTab('orders')}
-              onLoadDemoData={handleLoadDemoData}
-            />
-          )}
+      <ErrorBoundary>
+        <DashboardLayout
+          merchant={safeMerchant}
+          activeTab={activeDashboardTab}
+          setActiveTab={setActiveDashboardTab}
+          onLogout={handleLogout}
+          onOpenAddOrder={() => setActiveDashboardTab('orders')}
+          onGoToAdmin={() => {
+            setView('admin');
+            window.history.pushState({}, '', '/admin-oc-2026');
+          }}
+        >
+          <ErrorBoundary>
+            {activeDashboardTab === 'overview' && (
+              <OverviewTab
+                orders={orders}
+                onSelectTab={setActiveDashboardTab}
+                onOpenAddOrder={() => setActiveDashboardTab('orders')}
+                onLoadDemoData={handleLoadDemoData}
+              />
+            )}
 
-          {activeDashboardTab === 'orders' && (
-            <OrdersTab
-              orders={orders}
-              onAddOrder={handleAddOrder}
-              onImportCSV={handleImportCSV}
-              onUpdateOrderStatus={handleUpdateOrderStatus}
-              onEditOrder={handleEditOrder}
-              onDeleteOrder={handleDeleteOrder}
-            />
-          )}
+            {activeDashboardTab === 'orders' && (
+              <OrdersTab
+                orders={orders}
+                onAddOrder={handleAddOrder}
+                onImportCSV={handleImportCSV}
+                onUpdateOrderStatus={handleUpdateOrderStatus}
+                onEditOrder={handleEditOrder}
+                onDeleteOrder={handleDeleteOrder}
+              />
+            )}
 
-          {activeDashboardTab === 'templates' && (
-            <TemplatesTab
-              templates={templates}
-              onSaveTemplate={handleSaveTemplate}
-            />
-          )}
+            {activeDashboardTab === 'templates' && (
+              <TemplatesTab
+                templates={templates}
+                onSaveTemplate={handleSaveTemplate}
+              />
+            )}
 
-          {activeDashboardTab === 'settings' && (
-            <SettingsTab
-              merchant={merchant}
-              onSaveSettings={handleSaveSettings}
-            />
-          )}
+            {activeDashboardTab === 'settings' && (
+              <SettingsTab
+                merchant={safeMerchant}
+                onSaveSettings={handleSaveSettings}
+              />
+            )}
 
-          {activeDashboardTab === 'apikeys' && (
-            <ApiKeysTab
-              apiKeys={apiKeys}
-              onGenerateKey={handleGenerateKey}
-              onRevokeKey={handleRevokeKey}
-            />
-          )}
-        </ErrorBoundary>
-      </DashboardLayout>
+            {activeDashboardTab === 'apikeys' && (
+              <ApiKeysTab
+                apiKeys={apiKeys}
+                onGenerateKey={handleGenerateKey}
+                onRevokeKey={handleRevokeKey}
+              />
+            )}
+          </ErrorBoundary>
+        </DashboardLayout>
+      </ErrorBoundary>
     );
   }
 

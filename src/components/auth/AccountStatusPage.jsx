@@ -49,15 +49,22 @@ export default function AccountStatusPage({ merchant, user, onLogout }) {
           steps: []
         };
 
-      case 'expired':
+      case 'expired': {
+        const formattedDate = (() => {
+          if (!subEnd) return '';
+          const d = new Date(subEnd);
+          return !isNaN(d.getTime()) ? ` le ${d.toLocaleDateString('fr-FR')}` : '';
+        })();
+
         return {
           icon: <CalendarX className="h-8 w-8 text-orange-500" />,
           badgeBg: 'bg-orange-500/10 text-orange-600 border-orange-500/20',
           badgeText: 'Abonnement expiré',
           title: 'Votre abonnement a expiré',
-          description: `L'abonnement de votre boutique "${businessName}" a pris fin${subEnd ? ` le ${new Date(subEnd).toLocaleDateString('fr-FR')}` : ''}. Contactez-nous dès maintenant par téléphone ou WhatsApp pour renouveler votre accès.`,
+          description: `L'abonnement de votre boutique "${businessName}" a pris fin${formattedDate}. Contactez-nous dès maintenant par téléphone ou WhatsApp pour renouveler votre accès.`,
           steps: []
         };
+      }
 
       case 'rejected':
       default:
