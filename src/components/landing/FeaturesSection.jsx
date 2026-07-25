@@ -43,7 +43,7 @@ export default function FeaturesSection({ onGoToApp }) {
             Fonctionnalités Clés
           </span>
           <h2 className="font-heading font-extrabold text-2xl sm:text-4xl md:text-5xl text-foreground mt-3 sm:mt-4 tracking-tight">
-            Conçu spécialement pour le e-commerce <span className="font-display italic font-normal text-accent">COD au Maghreb</span>
+            Conçu spécialement pour le <span className="whitespace-nowrap">e-commerce</span> <span className="font-display italic font-normal text-accent whitespace-nowrap">COD au Maghreb</span>
           </h2>
           <p className="mt-3 sm:mt-4 font-body text-muted-foreground text-xs sm:text-base md:text-lg leading-relaxed">
             Réduisez de 40% vos colis non livrés et vos frais de livraison inutiles grâce à la confirmation WhatsApp instantanée.

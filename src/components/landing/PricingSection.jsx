@@ -46,25 +46,25 @@ export default function PricingSection({ onGoToApp }) {
             </div>
 
             {/* Price Display */}
-            <div className="p-6 rounded-2xl bg-secondary/40 border border-border/80 flex items-baseline justify-between">
+            <div className="p-4 sm:p-6 rounded-2xl bg-secondary/40 border border-border/80 flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
               <div>
                 <span className="text-xs font-heading font-semibold text-muted-foreground uppercase block">
                   Abonnement Mensuel
                 </span>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="font-heading font-black text-4xl sm:text-5xl text-foreground tracking-tight">
-                    9 500
+                <div className="flex items-baseline gap-1 mt-1 whitespace-nowrap">
+                  <span className="font-heading font-black text-3xl sm:text-4xl md:text-5xl text-foreground tracking-tight whitespace-nowrap">
+                    9&nbsp;500
                   </span>
-                  <span className="font-heading font-bold text-xl sm:text-2xl text-accent">
+                  <span className="font-heading font-bold text-lg sm:text-2xl text-accent whitespace-nowrap">
                     DA
                   </span>
-                  <span className="text-xs text-muted-foreground font-medium ml-1">
+                  <span className="text-xs text-muted-foreground font-medium ml-1 whitespace-nowrap">
                     / mois
                   </span>
                 </div>
               </div>
 
-              <span className="text-[11px] font-heading font-bold text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+              <span className="text-[11px] font-heading font-bold text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full self-start sm:self-auto shrink-0">
                 Sans engagement
               </span>
             </div>
