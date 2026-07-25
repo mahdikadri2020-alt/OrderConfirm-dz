@@ -166,7 +166,9 @@ export default function AdminMerchantDetailModal({ merchant, onClose, onToggleSt
                     {merchant.subscription_end ? new Date(merchant.subscription_end).toLocaleDateString('fr-FR') : 'Non défini'}
                   </span>
                   {merchant.subscription_end && (() => {
-                    const daysLeft = Math.ceil((new Date(merchant.subscription_end) - new Date()) / (1000 * 60 * 60 * 24));
+                    const d = new Date(merchant.subscription_end);
+                    if (isNaN(d.getTime())) return null;
+                    const daysLeft = Math.ceil((d - new Date()) / (1000 * 60 * 60 * 24));
                     if (daysLeft <= 0) {
                       return <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[10px] font-heading font-bold">Expiré</span>;
                     }

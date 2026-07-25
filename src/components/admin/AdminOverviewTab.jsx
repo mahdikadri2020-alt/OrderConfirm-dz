@@ -297,9 +297,11 @@ export default function AdminOverviewTab({
                   const isSuspended = merchant.status === 'suspended';
                   const isPending = merchant.status === 'pending_approval';
 
-                  const daysLeft = merchant.subscription_end 
-                    ? Math.ceil((new Date(merchant.subscription_end) - new Date()) / (1000 * 60 * 60 * 24))
-                    : null;
+                  const daysLeft = (() => {
+                    if (!merchant?.subscription_end) return null;
+                    const d = new Date(merchant.subscription_end);
+                    return !isNaN(d.getTime()) ? Math.ceil((d - new Date()) / (1000 * 60 * 60 * 24)) : null;
+                  })();
                   const isExpired = (daysLeft !== null && daysLeft <= 0) || merchant.status === 'expired';
 
                   return (
