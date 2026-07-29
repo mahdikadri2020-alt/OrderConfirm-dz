@@ -4,6 +4,7 @@ import { Settings, Check, Save } from 'lucide-react';
 export default function SettingsTab({ merchant, onSaveSettings }) {
   const [businessName, setBusinessName] = useState(merchant.business_name || '');
   const [phone, setPhone] = useState(merchant.phone || '');
+  const [initialSendDelayMinutes, setInitialSendDelayMinutes] = useState(String(merchant.initial_send_delay_minutes ?? '0'));
   const [retryHours, setRetryHours] = useState('2');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -12,6 +13,7 @@ export default function SettingsTab({ merchant, onSaveSettings }) {
     onSaveSettings({
       business_name: businessName,
       phone: phone,
+      initial_send_delay_minutes: Number(initialSendDelayMinutes)
     });
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2000);
@@ -22,7 +24,7 @@ export default function SettingsTab({ merchant, onSaveSettings }) {
       <div>
         <h2 className="text-xl font-semibold text-foreground">Paramètres</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Gérez les informations de votre boutique et les délais de relance automatique.
+          Gérez les informations de votre boutique et les délais d'envoi et de relance automatique.
         </p>
       </div>
 
@@ -63,21 +65,49 @@ export default function SettingsTab({ merchant, onSaveSettings }) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1.5">
-              Délai de relance automatique si sans réponse
-            </label>
-            <select
-              value={retryHours}
-              onChange={(e) => setRetryHours(e.target.value)}
-              className="w-full px-3 py-2 bg-secondary/40 border border-border/80 rounded-xl text-xs text-foreground focus:ring-2 focus:ring-ring"
-            >
-              <option value="1">1 heure après la commande</option>
-              <option value="2">2 heures après la commande (Recommandé)</option>
-              <option value="6">6 heures après la commande</option>
-              <option value="24">24 heures après la commande</option>
-              <option value="0">Pas de relance automatique</option>
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40">
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1.5 flex items-center justify-between">
+                <span>Délai avant le 1er message de confirmation</span>
+                <span className="text-[10px] font-normal text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Premier envoi</span>
+              </label>
+              <select
+                value={initialSendDelayMinutes}
+                onChange={(e) => setInitialSendDelayMinutes(e.target.value)}
+                className="w-full px-3 py-2 bg-secondary/40 border border-border/80 rounded-xl text-xs text-foreground focus:ring-2 focus:ring-ring"
+              >
+                <option value="0">Immédiat (Dès la réception de la commande)</option>
+                <option value="5">5 minutes après la commande</option>
+                <option value="15">15 minutes après la commande</option>
+                <option value="30">30 minutes après la commande</option>
+                <option value="60">1 heure après la commande</option>
+                <option value="120">2 heures après la commande</option>
+              </select>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Contrôle l'attente avant d'envoyer le tout premier WhatsApp au client.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-foreground mb-1.5 flex items-center justify-between">
+                <span>Délai de relance automatique</span>
+                <span className="text-[10px] font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Relance si sans réponse</span>
+              </label>
+              <select
+                value={retryHours}
+                onChange={(e) => setRetryHours(e.target.value)}
+                className="w-full px-3 py-2 bg-secondary/40 border border-border/80 rounded-xl text-xs text-foreground focus:ring-2 focus:ring-ring"
+              >
+                <option value="1">1 heure après la commande</option>
+                <option value="2">2 heures après la commande (Recommandé)</option>
+                <option value="6">6 heures après la commande</option>
+                <option value="24">24 heures après la commande</option>
+                <option value="0">Pas de relance automatique</option>
+              </select>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Relance automatique si le client n'a pas répondu au premier message.
+              </p>
+            </div>
           </div>
 
           <button

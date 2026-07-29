@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.merchants (
   plan TEXT DEFAULT 'debutant',
   status TEXT DEFAULT 'active',
   is_admin BOOLEAN DEFAULT false,
+  initial_send_delay_minutes INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -26,6 +27,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
   wilaya TEXT NOT NULL,
   address TEXT,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'rejected', 'no_reply')),
+  scheduled_send_at TIMESTAMPTZ,
+  initial_message_sent BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now(),
   confirmed_at TIMESTAMPTZ
 );

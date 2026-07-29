@@ -6,7 +6,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7"
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SECRET_KEY = Deno.env.get("SUPABASE_SECRET_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const N8N_WEBHOOK_URL = Deno.env.get("N8N_WEBHOOK_URL") ?? "https://n8n.your-domain.com/webhook/send-whatsapp-confirm";
+const N8N_WEBHOOK_URL = Deno.env.get("N8N_WEBHOOK_URL") ?? "https://n8n.srv1797289.hstgr.cloud/webhook/send-whatsapp-confirm";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY);
 
@@ -32,7 +32,16 @@ serve(async (req) => {
       );
     }
 
-    // 1. Insert order into Database
+    // 1. Fetch merchant settings (delay)
+    const { data: merchant } = await supabase
+      .from("merchants")
+      .select("initial_send_delay_minutes")
+      .eq("id", merchant_id)
+      .maybeSingle();
+
+    const delayMinutes = Number(merchant?.initial_send_delay_minutes ?? 0);
+
+    // 2. Insert order into Database (Trigger sets scheduled_send_at automatically)
     const { data: newOrder, error: orderError } = await supabase
       .from("orders")
       .insert([
@@ -44,7 +53,8 @@ serve(async (req) => {
           price,
           wilaya,
           address: address || "",
-          status: "pending"
+          status: "pending",
+          initial_message_sent: false
         }
       ])
       .select()
@@ -52,13 +62,13 @@ serve(async (req) => {
 
     if (orderError) throw orderError;
 
-    // 2. Fetch default template for merchant
+    // 3. Fetch default template for merchant
     const { data: template } = await supabase
       .from("message_templates")
       .select("template_text")
       .eq("merchant_id", merchant_id)
       .eq("is_default", true)
-      .single();
+      .maybeSingle();
 
     const defaultText = template?.template_text || 
       "Bonjour {customer_name} 👋, merci pour votre commande de {product} ({price} DA). Répondez *1* pour CONFIRMER la livraison à {wilaya} ou *2* pour ANNULER.";
@@ -70,37 +80,40 @@ serve(async (req) => {
       .replace(/{wilaya}/g, wilaya)
       .replace(/{address}/g, address || "");
 
-    // 3. Log outgoing WhatsApp message
-    await supabase.from("whatsapp_messages").insert([
-      {
-        order_id: newOrder.id,
-        merchant_id,
-        message_content: formattedMessage,
-        direction: "outgoing",
-        status: "sent"
-      }
-    ]);
+    // 4. Trigger Instant send if delay is 0, otherwise leave for scheduled n8n cron
+    let n8nResponseStatus = "scheduled";
+    if (delayMinutes === 0) {
+      // Log outgoing WhatsApp message & trigger immediate webhook
+      await supabase.from("whatsapp_messages").insert([
+        {
+          order_id: newOrder.id,
+          merchant_id,
+          message_content: formattedMessage,
+          direction: "outgoing",
+          status: "sent"
+        }
+      ]);
 
-    // 4. Trigger n8n Webhook
-    // NOTE FOR USER: Change N8N_WEBHOOK_URL in environment variables or hardcode your n8n webhook URL here
-    let n8nResponseStatus = "triggered";
-    try {
-      if (N8N_WEBHOOK_URL) {
-        await fetch(N8N_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            order_id: newOrder.id,
-            merchant_id,
-            customer_phone,
-            message: formattedMessage,
-            created_at: newOrder.created_at
-          })
-        });
+      try {
+        if (N8N_WEBHOOK_URL) {
+          await fetch(N8N_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order_id: newOrder.id,
+              merchant_id,
+              customer_phone,
+              message: formattedMessage,
+              created_at: newOrder.created_at
+            })
+          });
+        }
+        await supabase.from("orders").update({ initial_message_sent: true }).eq("id", newOrder.id);
+        n8nResponseStatus = "triggered_immediate";
+      } catch (n8nErr) {
+        console.error("n8n instant call failed:", n8nErr);
+        n8nResponseStatus = "queued_retry";
       }
-    } catch (n8nErr) {
-      console.error("n8n call failed, queued locally:", n8nErr);
-      n8nResponseStatus = "queued_retry";
     }
 
     return new Response(

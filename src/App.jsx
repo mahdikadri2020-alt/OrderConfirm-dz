@@ -633,7 +633,8 @@ export default function App() {
         .update({
           business_name: updatedMerchant.business_name,
           phone: updatedMerchant.phone,
-          status: updatedMerchant.status
+          status: updatedMerchant.status,
+          initial_send_delay_minutes: updatedMerchant.initial_send_delay_minutes ?? 0
         })
         .eq('id', merchant.id);
     }
