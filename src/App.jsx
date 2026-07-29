@@ -485,20 +485,10 @@ export default function App() {
         // Check if initial send delay is 0 (Immédiat) to trigger instant WhatsApp send
         const delayMinutes = Number(merchant?.initial_send_delay_minutes ?? 0);
         if (delayMinutes === 0) {
+          const formattedMessage = `Bonjour ${data.customer_name || 'Client'} 👋, merci pour votre commande de ${data.product || 'votre produit'} (${data.price || ''} DA). Veuillez répondre par 1 pour CONFIRMER ou 2 pour ANNULER.`;
+
           try {
-            const formattedMessage = `Bonjour ${data.customer_name || 'Client'} 👋, merci pour votre commande de ${data.product || 'votre produit'} (${data.price || ''} DA). Veuillez répondre par 1 pour CONFIRMER ou 2 pour ANNULER.`;
-
-            await supabase.from('whatsapp_messages').insert([
-              {
-                order_id: data.id,
-                merchant_id: data.merchant_id,
-                message_content: formattedMessage,
-                direction: 'outgoing',
-                status: 'sent'
-              }
-            ]);
-
-            fetch('https://n8n.srv1797289.hstgr.cloud/webhook/send-whatsapp-confirm', {
+            const wahaRes = await fetch('https://n8n.srv1797289.hstgr.cloud/webhook/send-whatsapp-confirm', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -508,11 +498,35 @@ export default function App() {
                 message: formattedMessage,
                 created_at: data.created_at
               })
-            }).catch((err) => console.error("Instant n8n call error:", err));
+            });
 
-            await supabase.from('orders').update({ initial_message_sent: true }).eq('id', data.id);
+            const isSuccess = wahaRes.ok;
+            const finalStatus = isSuccess ? 'sent' : 'failed';
+
+            await supabase.from('whatsapp_messages').insert([
+              {
+                order_id: data.id,
+                merchant_id: data.merchant_id,
+                message_content: formattedMessage,
+                direction: 'outgoing',
+                status: finalStatus
+              }
+            ]);
+
+            if (isSuccess) {
+              await supabase.from('orders').update({ initial_message_sent: true }).eq('id', data.id);
+            }
           } catch (instantErr) {
             console.error("Instant WhatsApp send error:", instantErr);
+            await supabase.from('whatsapp_messages').insert([
+              {
+                order_id: data.id,
+                merchant_id: data.merchant_id,
+                message_content: `[Failed to connect]: ${formattedMessage}`,
+                direction: 'outgoing',
+                status: 'failed'
+              }
+            ]);
           }
         }
 

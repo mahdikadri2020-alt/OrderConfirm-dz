@@ -83,20 +83,10 @@ serve(async (req) => {
     // 4. Trigger Instant send if delay is 0, otherwise leave for scheduled n8n cron
     let n8nResponseStatus = "scheduled";
     if (delayMinutes === 0) {
-      // Log outgoing WhatsApp message & trigger immediate webhook
-      await supabase.from("whatsapp_messages").insert([
-        {
-          order_id: newOrder.id,
-          merchant_id,
-          message_content: formattedMessage,
-          direction: "outgoing",
-          status: "sent"
-        }
-      ]);
-
       try {
+        let isSuccess = false;
         if (N8N_WEBHOOK_URL) {
-          await fetch(N8N_WEBHOOK_URL, {
+          const wahaRes = await fetch(N8N_WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -107,11 +97,38 @@ serve(async (req) => {
               created_at: newOrder.created_at
             })
           });
+          isSuccess = wahaRes.ok;
         }
-        await supabase.from("orders").update({ initial_message_sent: true }).eq("id", newOrder.id);
-        n8nResponseStatus = "triggered_immediate";
+
+        const finalStatus = isSuccess ? "sent" : "failed";
+
+        await supabase.from("whatsapp_messages").insert([
+          {
+            order_id: newOrder.id,
+            merchant_id,
+            message_content: formattedMessage,
+            direction: "outgoing",
+            status: finalStatus
+          }
+        ]);
+
+        if (isSuccess) {
+          await supabase.from("orders").update({ initial_message_sent: true }).eq("id", newOrder.id);
+          n8nResponseStatus = "triggered_immediate";
+        } else {
+          n8nResponseStatus = "failed_waha";
+        }
       } catch (n8nErr) {
         console.error("n8n instant call failed:", n8nErr);
+        await supabase.from("whatsapp_messages").insert([
+          {
+            order_id: newOrder.id,
+            merchant_id,
+            message_content: `[Connection Failed]: ${formattedMessage}`,
+            direction: "outgoing",
+            status: "failed"
+          }
+        ]);
         n8nResponseStatus = "queued_retry";
       }
     }
