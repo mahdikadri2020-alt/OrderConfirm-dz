@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
 -- 3. WHATSAPP MESSAGES TABLE (Linked to Orders)
 CREATE TABLE IF NOT EXISTS public.whatsapp_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id UUID NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
+  order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
+  merchant_id UUID REFERENCES public.merchants(id) ON DELETE CASCADE,
   message_content TEXT NOT NULL,
   direction TEXT NOT NULL CHECK (direction IN ('outgoing', 'incoming')),
   status TEXT NOT NULL DEFAULT 'sent' CHECK (status IN ('sent', 'delivered', 'read', 'failed')),
