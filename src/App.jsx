@@ -814,6 +814,41 @@ export default function App() {
     }
   };
 
+  const handleDeleteMerchantAccount = async (merchantId, targetUserId) => {
+    const target = adminMerchants.find((m) => m.id === merchantId || m.user_id === targetUserId);
+    if (target?.is_admin || target?.email === 'mahdi.kadri2020@gmail.com') {
+      throw new Error("Impossible de supprimer un compte Administrateur.");
+    }
+
+    setAdminMerchants((prev) => prev.filter((m) => m.id !== merchantId && m.user_id !== targetUserId));
+
+    if (isSupabaseConfigured && currentUser) {
+      try {
+        const { error: rpcError } = await supabase.rpc('delete_merchant_account_cascade', {
+          target_user_id: targetUserId
+        });
+
+        if (rpcError) {
+          console.warn("RPC deletion warning, executing sequential table deletion fallback:", rpcError);
+          if (merchantId) {
+            await supabase.from('whatsapp_messages').delete().eq('merchant_id', merchantId);
+            await supabase.from('orders').delete().eq('merchant_id', merchantId);
+            await supabase.from('message_templates').delete().eq('merchant_id', merchantId);
+            await supabase.from('subscriptions').delete().eq('merchant_id', merchantId);
+            await supabase.from('api_keys').delete().eq('merchant_id', merchantId);
+          }
+          await supabase.from('stores').delete().eq('user_id', targetUserId);
+          await supabase.from('merchants').delete().eq('user_id', targetUserId);
+          await supabase.from('profiles').delete().eq('id', targetUserId);
+          await supabase.from('users').delete().eq('id', targetUserId);
+        }
+      } catch (err) {
+        console.error("Erreur lors de la suppression du compte marchand dans Supabase :", err);
+        throw err;
+      }
+    }
+  };
+
   // RENDER ADMIN DASHBOARD VIEW (/admin-oc-2026)
   if (view === 'admin') {
     // Check security: user must be admin or viewing hidden path in demo mode
@@ -873,6 +908,7 @@ export default function App() {
               onToggleMerchantStatus={handleToggleMerchantStatus}
               onChangeMerchantPlan={handleChangeMerchantPlan}
               onRenewMerchant={handleRenewMerchant}
+              onDeleteMerchant={handleDeleteMerchantAccount}
             />
           )}
 
@@ -891,6 +927,7 @@ export default function App() {
               onToggleMerchantStatus={handleToggleMerchantStatus}
               onChangeMerchantPlan={handleChangeMerchantPlan}
               onRenewMerchant={handleRenewMerchant}
+              onDeleteMerchant={handleDeleteMerchantAccount}
             />
           )}
 

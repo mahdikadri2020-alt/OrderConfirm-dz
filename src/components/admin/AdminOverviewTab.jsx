@@ -16,16 +16,19 @@ import {
   Sparkles,
   ChevronRight,
   ShieldCheck,
-  Building
+  Building,
+  Trash2
 } from 'lucide-react';
 import AdminMerchantDetailModal from './AdminMerchantDetailModal';
+import AdminDeleteMerchantModal from './AdminDeleteMerchantModal';
 
 export default function AdminOverviewTab({ 
   merchants = [], 
   platformStats = {}, 
   onToggleMerchantStatus, 
   onChangeMerchantPlan,
-  onRenewMerchant
+  onRenewMerchant,
+  onDeleteMerchant
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'suspended' | 'pending_approval' | 'expired'
@@ -33,6 +36,8 @@ export default function AdminOverviewTab({
   const [sortOrder, setSortOrder] = useState('newest');
   
   const [selectedMerchant, setSelectedMerchant] = useState(null);
+  const [merchantToDelete, setMerchantToDelete] = useState(null);
+  const [successToast, setSuccessToast] = useState('');
 
   // Compute calculated platform metrics from real data or stats props
   const computedStats = useMemo(() => {
@@ -414,6 +419,19 @@ export default function AdminOverviewTab({
                           >
                             <Eye className="h-4 w-4" />
                           </button>
+
+                          {!merchant.is_admin && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMerchantToDelete(merchant);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-rose-500/10 text-rose-600 hover:text-rose-700 transition-colors"
+                              title="حذف حساب التاجر نهائياً"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -425,6 +443,14 @@ export default function AdminOverviewTab({
         </div>
 
       </div>
+
+      {/* Success Notification Banner */}
+      {successToast && (
+        <div className="fixed bottom-6 left-6 z-50 p-4 rounded-2xl bg-emerald-600 text-white font-heading font-bold text-xs shadow-xl flex items-center gap-2 animate-fadeIn" dir="rtl">
+          <CheckCircle2 className="h-4 w-4" />
+          <span>{successToast}</span>
+        </div>
+      )}
 
       {/* Merchant Detail Modal */}
       {selectedMerchant && (
@@ -438,6 +464,22 @@ export default function AdminOverviewTab({
           onChangePlan={(id, newPlan) => {
             if (onChangeMerchantPlan) onChangeMerchantPlan(id, newPlan);
             setSelectedMerchant(prev => prev ? ({ ...prev, plan: newPlan }) : null);
+          }}
+        />
+      )}
+
+      {/* Merchant Delete Modal */}
+      {merchantToDelete && (
+        <AdminDeleteMerchantModal
+          merchant={merchantToDelete}
+          onClose={() => setMerchantToDelete(null)}
+          onConfirmDelete={async (targetMerchant) => {
+            if (onDeleteMerchant) {
+              await onDeleteMerchant(targetMerchant.id, targetMerchant.user_id);
+            }
+            setMerchantToDelete(null);
+            setSuccessToast('تم حذف الحساب بنجاح');
+            setTimeout(() => setSuccessToast(''), 4000);
           }}
         />
       )}
