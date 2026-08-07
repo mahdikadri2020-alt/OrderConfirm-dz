@@ -818,7 +818,11 @@ export default function App() {
   if (view === 'admin') {
     // Check security: user must be admin or viewing hidden path in demo mode
     const isPathAdmin = window.location.pathname.toLowerCase().includes('admin-oc-2026');
-    const isUserAdmin = merchant?.is_admin || currentUser?.is_admin || Boolean(currentUser?.user_metadata?.is_admin);
+    const isUserAdmin = 
+      Boolean(merchant?.is_admin) || 
+      Boolean(currentUser?.is_admin) || 
+      Boolean(currentUser?.user_metadata?.is_admin) || 
+      currentUser?.email === 'mahdi.kadri2020@gmail.com';
 
     // If logged in as non-admin trying to access hidden route, show 404 or redirect to app
     if (currentUser && !isUserAdmin && !isSupabaseConfigured) {
