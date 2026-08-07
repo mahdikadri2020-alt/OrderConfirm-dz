@@ -820,6 +820,10 @@ export default function App() {
       throw new Error("Impossible de supprimer un compte Administrateur.");
     }
 
+    const targetEmail = target?.email;
+    const targetBusinessName = target?.business_name;
+    const targetPhone = target?.phone;
+
     setAdminMerchants((prev) => prev.filter((m) => m.id !== merchantId && m.user_id !== targetUserId));
 
     if (isSupabaseConfigured && currentUser) {
@@ -830,17 +834,49 @@ export default function App() {
 
         if (rpcError) {
           console.warn("RPC deletion warning, executing sequential table deletion fallback:", rpcError);
+          
+          // 1. Delete orders & linked activity
           if (merchantId) {
             await supabase.from('whatsapp_messages').delete().eq('merchant_id', merchantId);
             await supabase.from('orders').delete().eq('merchant_id', merchantId);
+          }
+          await supabase.from('orders').delete().eq('phone', targetPhone || '');
+
+          // 2. Delete message_templates & settings
+          if (merchantId) {
             await supabase.from('message_templates').delete().eq('merchant_id', merchantId);
             await supabase.from('subscriptions').delete().eq('merchant_id', merchantId);
             await supabase.from('api_keys').delete().eq('merchant_id', merchantId);
           }
+
+          // 3. Delete stores (by user_id or store_name or whatsapp_number)
           await supabase.from('stores').delete().eq('user_id', targetUserId);
+          if (targetBusinessName) {
+            await supabase.from('stores').delete().eq('store_name', targetBusinessName);
+          }
+
+          // 4. Delete account_requests (by email or store_name or whatsapp)
+          if (targetEmail) {
+            await supabase.from('account_requests').delete().eq('email', targetEmail);
+          }
+          if (targetBusinessName) {
+            await supabase.from('account_requests').delete().eq('store_name', targetBusinessName);
+          }
+
+          // 5. Delete merchants
           await supabase.from('merchants').delete().eq('user_id', targetUserId);
+
+          // 6. Delete profiles
           await supabase.from('profiles').delete().eq('id', targetUserId);
+          if (targetEmail) {
+            await supabase.from('profiles').delete().eq('email', targetEmail);
+          }
+
+          // 7. Delete users
           await supabase.from('users').delete().eq('id', targetUserId);
+          if (targetEmail) {
+            await supabase.from('users').delete().eq('email', targetEmail);
+          }
         }
       } catch (err) {
         console.error("Erreur lors de la suppression du compte marchand dans Supabase :", err);
