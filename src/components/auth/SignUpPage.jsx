@@ -1,18 +1,8 @@
 import React, { useState } from 'react';
-import { Building, Mail, Phone, Lock, ArrowRight, CheckCircle2, AlertCircle, ArrowLeft, User, MapPin, BarChart2, Clock } from 'lucide-react';
+import { Building, Mail, Phone, Lock, ArrowRight, AlertCircle, ArrowLeft, User, MapPin, BarChart2, Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { LogoIcon } from '../common/Logo';
-
-const ALGERIAN_WILAYAS = [
-  '01 - Adrar', '02 - Chlef', '03 - Laghouat', '04 - Oum El Bouaghi', '05 - Batna', '06 - Béjaïa',
-  '07 - Biskra', '08 - Béchar', '09 - Blida', '10 - Bouira', '11 - Tamanrasset', '12 - Tébessa',
-  '13 - Tlemcen', '14 - Tiaret', '15 - Tizi Ouzou', '16 - Alger', '17 - Djelfa', '18 - Jijel',
-  '19 - Sétif', '20 - Saïda', '21 - Skikda', '22 - Sidi Bel Abbès', '23 - Annaba', '24 - Guelma',
-  '25 - Constantine', '26 - Médéa', '27 - Mostaganem', '28 - M\'Sila', '29 - Mascara', '30 - Ouargla',
-  '31 - Oran', '32 - El Bayadh', '33 - Illizi', '34 - Bordj Bou Arreridj', '35 - Boumerdès', '36 - El Tarf',
-  '37 - Tindouf', '38 - Tissemsilt', '39 - El Oued', '40 - Khenchela', '41 - Souk Ahras', '42 - Tipaza',
-  '43 - Mila', '44 - Aïn Defla', '45 - Naâma', '46 - Aïn Témouchent', '47 - Ghardaïa', '48 - Relizane'
-];
+import { ALGERIAN_WILAYAS } from '../../constants/wilayas';
 
 export default function SignUpPage({ onGoToLogin, onAuthSuccess, onGoHome }) {
   const [fullName, setFullName] = useState('');
@@ -141,56 +131,49 @@ export default function SignUpPage({ onGoToLogin, onAuthSuccess, onGoHome }) {
       <div className="relative w-full max-w-lg bg-background rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-border shadow-2xl z-10">
         
         {isSubmittedSuccess ? (
-          /* Clear Success Screen Requirement #1 */
-          <div className="text-center py-6 space-y-6 animate-fadeIn" dir="rtl">
-            <div className="h-20 w-20 rounded-3xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mx-auto">
+          /* 100% French Success Screen with Single "Retour à l'accueil" Button */
+          <div className="text-center py-6 space-y-6 animate-fadeIn" dir="ltr">
+            <div className="h-20 w-20 rounded-3xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mx-auto shadow-xs">
               <Clock className="h-10 w-10 animate-pulse" />
             </div>
 
-            <div className="space-y-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-heading font-bold">
+            <div className="space-y-2.5">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-xs font-heading font-bold">
                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-                <span>طلب قيد المراجعة</span>
+                <span>Demande en cours d'examen</span>
               </span>
               
               <h2 className="font-heading font-black text-2xl sm:text-3xl text-foreground tracking-tight">
-                تم إرسال طلبك بنجاح !
+                Demande envoyée avec succès !
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                سنتصل بك قريباً لإكمال عملية الدفع وتفعيل حسابك.
-              </p>
-              <p className="text-[11px] text-muted-foreground/80">
-                Nous vous contacterons sous peu pour procéder au paiement et activer votre compte.
+                Votre demande d'inscription a bien été enregistrée. L'équipe <strong className="text-foreground">OrderConfirm</strong> vous contactera très prochainement par téléphone pour finaliser le paiement et activer votre compte.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-secondary/50 border border-border text-xs text-right space-y-2">
+            <div className="p-4 rounded-2xl bg-secondary/50 border border-border text-xs text-left space-y-2">
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>اسم المتجر:</span>
+                <span>Nom de la boutique :</span>
                 <strong className="text-foreground font-heading font-bold">{businessName}</strong>
               </div>
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>رقم الهاتف:</span>
+                <span>Numéro de téléphone :</span>
                 <strong className="text-foreground font-mono">{phone}</strong>
               </div>
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>البريد الإلكتروني:</span>
+                <span>Adresse E-mail :</span>
                 <strong className="text-foreground font-mono">{email}</strong>
               </div>
             </div>
 
-            <div className="pt-2 flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={onGoToLogin}
-                className="flex-1 py-3 bg-accent text-white rounded-full text-xs font-heading font-bold hover:bg-accent/90 transition-all shadow-md"
-              >
-                تسجيل الدخول إلى حسابك
-              </button>
+            {/* Single Button: "Retour à l'accueil" */}
+            <div className="pt-2">
               <button
                 onClick={onGoHome}
-                className="py-3 px-6 bg-secondary text-foreground rounded-full text-xs font-heading font-bold hover:bg-secondary/80 transition-all border border-border"
+                className="w-full py-3.5 px-6 bg-accent text-white rounded-full text-xs font-heading font-bold hover:bg-accent/90 transition-all shadow-md flex items-center justify-center gap-2"
               >
-                العودة للرئيسية
+                <ArrowLeft className="h-4 w-4" />
+                <span>Retour à l'accueil</span>
               </button>
             </div>
           </div>
@@ -286,7 +269,7 @@ export default function SignUpPage({ onGoToLogin, onAuthSuccess, onGoHome }) {
                   </div>
                 </div>
 
-                {/* Wilaya */}
+                {/* Wilaya (Full 58 Algerian Wilayas) */}
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1">
                     Wilaya <span className="text-rose-500">*</span>

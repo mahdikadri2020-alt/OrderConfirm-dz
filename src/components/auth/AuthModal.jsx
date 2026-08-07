@@ -1,18 +1,8 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, Building, Phone, ArrowRight, CheckCircle2, AlertCircle, Clock, User, MapPin, BarChart2 } from 'lucide-react';
+import { X, Lock, Mail, Building, Phone, ArrowRight, AlertCircle, Clock, User, MapPin, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { LogoIcon } from '../common/Logo';
-
-const ALGERIAN_WILAYAS = [
-  '01 - Adrar', '02 - Chlef', '03 - Laghouat', '04 - Oum El Bouaghi', '05 - Batna', '06 - Béjaïa',
-  '07 - Biskra', '08 - Béchar', '09 - Blida', '10 - Bouira', '11 - Tamanrasset', '12 - Tébessa',
-  '13 - Tlemcen', '14 - Tiaret', '15 - Tizi Ouzou', '16 - Alger', '17 - Djelfa', '18 - Jijel',
-  '19 - Sétif', '20 - Saïda', '21 - Skikda', '22 - Sidi Bel Abbès', '23 - Annaba', '24 - Guelma',
-  '25 - Constantine', '26 - Médéa', '27 - Mostaganem', '28 - M\'Sila', '29 - Mascara', '30 - Ouargla',
-  '31 - Oran', '32 - El Bayadh', '33 - Illizi', '34 - Bordj Bou Arreridj', '35 - Boumerdès', '36 - El Tarf',
-  '37 - Tindouf', '38 - Tissemsilt', '39 - El Oued', '40 - Khenchela', '41 - Souk Ahras', '42 - Tipaza',
-  '43 - Mila', '44 - Aïn Defla', '45 - Naâma', '46 - Aïn Témouchent', '47 - Ghardaïa', '48 - Relizane'
-];
+import { ALGERIAN_WILAYAS } from '../../constants/wilayas';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAuthSuccess }) {
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup'
@@ -130,28 +120,34 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', onAu
         </button>
 
         {isSubmittedSuccess ? (
-          <div className="text-center py-4 space-y-4" dir="rtl">
+          /* 100% French Success Screen in AuthModal */
+          <div className="text-center py-4 space-y-5 animate-fadeIn" dir="ltr">
             <div className="h-16 w-16 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mx-auto">
               <Clock className="h-8 w-8 animate-pulse" />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[11px] font-heading font-bold">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
+                <span>Demande en cours d'examen</span>
+              </span>
+
               <h3 className="font-heading font-black text-2xl text-foreground">
-                تم إرسال طلبك بنجاح !
+                Demande envoyée avec succès !
               </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                سنتصل بك قريباً لإكمال عملية الدفع وتفعيل حسابك.
+              
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-sm mx-auto">
+                Votre demande d'inscription a bien été enregistrée. L'équipe <strong className="text-foreground">OrderConfirm</strong> vous contactera très prochainement par téléphone pour finaliser le paiement et activer votre compte.
               </p>
             </div>
 
+            {/* Single Button: "Retour à l'accueil" */}
             <button
-              onClick={() => {
-                setMode('login');
-                setIsSubmittedSuccess(false);
-              }}
-              className="w-full py-3 bg-accent text-white rounded-full text-xs font-heading font-bold hover:bg-accent/90 transition-all shadow-md mt-2"
+              onClick={onClose}
+              className="w-full py-3 bg-accent text-white rounded-full text-xs font-heading font-bold hover:bg-accent/90 transition-all shadow-md flex items-center justify-center gap-2 mt-2"
             >
-              تسجيل الدخول إلى حسابك
+              <ArrowLeft className="h-4 w-4" />
+              <span>Retour à l'accueil</span>
             </button>
           </div>
         ) : (

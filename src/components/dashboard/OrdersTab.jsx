@@ -18,6 +18,7 @@ import {
   Pencil,
   Trash2
 } from 'lucide-react';
+import { ALGERIAN_WILAYAS } from '../../constants/wilayas';
 
 export default function OrdersTab({ 
   orders = [], 
@@ -677,7 +678,7 @@ export default function OrdersTab({
                     onChange={(e) => setNewWilaya(e.target.value)}
                     className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs font-heading font-semibold focus:ring-2 focus:ring-ring"
                   >
-                    {['16 - Alger', '31 - Oran', '25 - Constantine', '09 - Blida', '19 - Sétif', '23 - Annaba', '13 - Tlemcen', '35 - Boumerdès'].map((w) => (
+                    {ALGERIAN_WILAYAS.map((w) => (
                       <option key={w} value={w}>{w}</option>
                     ))}
                   </select>
@@ -798,7 +799,7 @@ export default function OrdersTab({
                     onChange={(e) => setEditWilaya(e.target.value)}
                     className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs font-heading font-semibold focus:ring-2 focus:ring-ring"
                   >
-                    {['16 - Alger', '31 - Oran', '25 - Constantine', '09 - Blida', '19 - Sétif', '23 - Annaba', '13 - Tlemcen', '35 - Boumerdès'].map((w) => (
+                    {ALGERIAN_WILAYAS.map((w) => (
                       <option key={w} value={w}>{w}</option>
                     ))}
                   </select>
