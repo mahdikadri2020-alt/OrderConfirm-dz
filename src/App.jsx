@@ -72,6 +72,7 @@ export default function App() {
 
   // Admin Data State
   const [adminMerchants, setAdminMerchants] = useState(mockAdminMerchants);
+  const [pendingAccountRequests, setPendingAccountRequests] = useState([]);
   const [adminOrders, setAdminOrders] = useState([]);
   const [adminTemplates, setAdminTemplates] = useState([]);
   const [adminMessages, setAdminMessages] = useState([]);
@@ -160,23 +161,82 @@ export default function App() {
             .maybeSingle();
 
           let activeMerchant = fetchedMerchant;
+          
           if (!activeMerchant) {
             const isUserAdmin = currentUser.email === 'mahdi.kadri2020@gmail.com';
-            const { data: newM } = await supabase
-              .from('merchants')
-              .insert([{
+            if (isUserAdmin) {
+              const { data: newM } = await supabase
+                .from('merchants')
+                .insert([{
+                  user_id: currentUser.id,
+                  business_name: 'OrderConfirm Admin',
+                  phone: '0550000000',
+                  plan: 'Pro Admin',
+                  status: 'active',
+                  is_admin: true,
+                  subscription_start: new Date().toISOString(),
+                  subscription_end: new Date(Date.now() + 365 * 86400000).toISOString()
+                }])
+                .select('*')
+                .maybeSingle();
+              activeMerchant = newM || {
                 user_id: currentUser.id,
-                business_name: currentUser.user_metadata?.business_name || 'Boutique El Bahia',
-                phone: currentUser.user_metadata?.phone || '0550000000',
-                plan: 'debutant',
-                status: isUserAdmin ? 'active' : 'pending_approval',
-                is_admin: isUserAdmin,
-                subscription_start: isUserAdmin ? new Date().toISOString() : null,
-                subscription_end: isUserAdmin ? new Date(Date.now() + 365 * 86400000).toISOString() : null
-              }])
-              .select('*')
-              .single();
-            activeMerchant = newM;
+                business_name: 'OrderConfirm Admin',
+                status: 'active',
+                is_admin: true
+              };
+            } else {
+              // Check account_requests status for non-admin user
+              const { data: accReq } = await supabase
+                .from('account_requests')
+                .select('*')
+                .eq('email', currentUser.email)
+                .order('created_at', { ascending: false })
+                .maybeSingle();
+
+              if (accReq?.status === 'approved') {
+                const nowISO = new Date().toISOString();
+                const endISO = new Date(Date.now() + 30 * 86400000).toISOString();
+
+                const { data: newM } = await supabase
+                  .from('merchants')
+                  .insert([{
+                    user_id: currentUser.id,
+                    business_name: accReq.store_name || currentUser.user_metadata?.business_name || 'Boutique Marchande',
+                    phone: accReq.whatsapp || currentUser.user_metadata?.phone || '',
+                    plan: 'debutant',
+                    status: 'active',
+                    is_admin: false,
+                    subscription_start: nowISO,
+                    subscription_end: endISO
+                  }])
+                  .select('*')
+                  .maybeSingle();
+
+                activeMerchant = newM || {
+                  user_id: currentUser.id,
+                  business_name: accReq.store_name || 'Boutique Marchande',
+                  status: 'active',
+                  plan: 'debutant'
+                };
+              } else if (accReq?.status === 'rejected') {
+                activeMerchant = {
+                  user_id: currentUser.id,
+                  business_name: accReq.store_name || currentUser.user_metadata?.business_name || 'Boutique',
+                  phone: accReq.whatsapp || currentUser.user_metadata?.phone || '',
+                  status: 'rejected',
+                  plan: 'debutant'
+                };
+              } else {
+                activeMerchant = {
+                  user_id: currentUser.id,
+                  business_name: accReq?.store_name || currentUser.user_metadata?.business_name || 'Boutique',
+                  phone: accReq?.whatsapp || currentUser.user_metadata?.phone || '',
+                  status: 'pending_approval',
+                  plan: 'debutant'
+                };
+              }
+            }
           }
 
           // Check if active subscription has expired
@@ -267,7 +327,22 @@ export default function App() {
           // 6. If admin, fetch all platform-wide resources using admin view and relations
           if (activeMerchant?.is_admin) {
             try {
-              // 6a. Merchants with email view
+              // 6a-1. Fetch pending account_requests
+              const { data: reqData } = await supabase
+                .from('account_requests')
+                .select('*')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+
+              if (reqData) {
+                setPendingAccountRequests(reqData);
+              }
+            } catch (reqErr) {
+              console.warn('Error fetching account_requests:', reqErr);
+            }
+
+            try {
+              // 6a-2. Merchants with email view
               const { data: merchantsWithEmailData } = await supabase
                 .from('merchants_with_email')
                 .select('*')
@@ -749,44 +824,74 @@ export default function App() {
     }
   };
 
-  const handleApproveMerchant = async (merchantId) => {
+  const handleApproveMerchant = async (reqOrMerchant) => {
     const nowISO = new Date().toISOString();
     const endISO = new Date(Date.now() + 30 * 86400000).toISOString();
 
+    const targetId = typeof reqOrMerchant === 'object' ? reqOrMerchant.id : reqOrMerchant;
+    const targetEmail = typeof reqOrMerchant === 'object' ? reqOrMerchant.email : null;
+
+    setPendingAccountRequests((prev) => prev.filter((r) => r.id !== targetId && r.email !== targetEmail));
     setAdminMerchants((prev) =>
       prev.map((m) =>
-        m.id === merchantId
+        m.id === targetId || m.email === targetEmail
           ? { ...m, status: 'active', subscription_start: nowISO, subscription_end: endISO }
           : m
       )
     );
 
     if (isSupabaseConfigured && currentUser) {
-      await supabase
-        .from('merchants')
-        .update({
-          status: 'active',
-          subscription_start: nowISO,
-          subscription_end: endISO
-        })
-        .eq('id', merchantId);
+      try {
+        const { error: rpcError } = await supabase.rpc('approve_merchant_request', {
+          req_id: typeof targetId === 'number' ? targetId : null,
+          req_email: targetEmail || ''
+        });
+
+        if (rpcError) {
+          if (targetId) {
+            await supabase.from('merchants').update({ status: 'active', subscription_start: nowISO, subscription_end: endISO }).eq('id', targetId);
+          }
+          if (targetEmail) {
+            await supabase.from('account_requests').update({ status: 'approved', approved_at: nowISO }).eq('email', targetEmail);
+          }
+        }
+      } catch (err) {
+        console.error("Erreur lors de la validation du marchand :", err);
+      }
     }
   };
 
-  const handleRejectMerchant = async (merchantId) => {
+  const handleRejectMerchant = async (reqOrMerchant) => {
+    const targetId = typeof reqOrMerchant === 'object' ? reqOrMerchant.id : reqOrMerchant;
+    const targetEmail = typeof reqOrMerchant === 'object' ? reqOrMerchant.email : null;
+
+    setPendingAccountRequests((prev) => prev.filter((r) => r.id !== targetId && r.email !== targetEmail));
     setAdminMerchants((prev) =>
       prev.map((m) =>
-        m.id === merchantId
+        m.id === targetId || m.email === targetEmail
           ? { ...m, status: 'rejected' }
           : m
       )
     );
 
     if (isSupabaseConfigured && currentUser) {
-      await supabase
-        .from('merchants')
-        .update({ status: 'rejected' })
-        .eq('id', merchantId);
+      try {
+        const { error: rpcError } = await supabase.rpc('reject_merchant_request', {
+          req_id: typeof targetId === 'number' ? targetId : null,
+          req_email: targetEmail || ''
+        });
+
+        if (rpcError) {
+          if (targetId) {
+            await supabase.from('merchants').update({ status: 'rejected' }).eq('id', targetId);
+          }
+          if (targetEmail) {
+            await supabase.from('account_requests').update({ status: 'rejected' }).eq('email', targetEmail);
+          }
+        }
+      } catch (err) {
+        console.error("Erreur lors du refus du marchand :", err);
+      }
     }
   };
 
@@ -923,6 +1028,10 @@ export default function App() {
     }
 
     const pendingMerchants = adminMerchants.filter((m) => m.status === 'pending_approval');
+    const allPendingRequests = [
+      ...pendingAccountRequests,
+      ...pendingMerchants.filter((pm) => !pendingAccountRequests.some((pr) => pr.email === pm.email))
+    ];
 
     return (
       <AdminDashboardLayout
@@ -930,7 +1039,7 @@ export default function App() {
         activeTab={activeAdminTab}
         setActiveTab={setActiveAdminTab}
         onLogout={handleLogout}
-        pendingCount={pendingMerchants.length}
+        pendingCount={allPendingRequests.length}
         onSwitchToMerchantApp={() => {
           setView('app');
           window.history.pushState({}, '', '/app');
@@ -950,7 +1059,7 @@ export default function App() {
 
           {activeAdminTab === 'pending' && (
             <AdminPendingMerchantsTab
-              pendingMerchants={pendingMerchants}
+              pendingMerchants={allPendingRequests}
               onApproveMerchant={handleApproveMerchant}
               onRejectMerchant={handleRejectMerchant}
             />
