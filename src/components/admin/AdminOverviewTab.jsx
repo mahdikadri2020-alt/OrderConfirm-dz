@@ -24,6 +24,7 @@ import AdminDeleteMerchantModal from './AdminDeleteMerchantModal';
 
 export default function AdminOverviewTab({ 
   merchants = [], 
+  orders = [],
   platformStats = {}, 
   onToggleMerchantStatus, 
   onChangeMerchantPlan,
@@ -39,34 +40,59 @@ export default function AdminOverviewTab({
   const [merchantToDelete, setMerchantToDelete] = useState(null);
   const [successToast, setSuccessToast] = useState('');
 
-  // Compute calculated platform metrics from real data or stats props
+  // Compute calculated platform metrics directly from real orders & merchants data
   const computedStats = useMemo(() => {
-    const totalCount = merchants.length || platformStats.totalMerchants || 0;
-    
-    let totalOrdersAllTime = 0;
-    let totalConfirmedOrders = 0;
-    let totalRevenueDzd = 0;
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
 
-    merchants.forEach((m) => {
-      totalOrdersAllTime += m.total_orders || 0;
-      totalConfirmedOrders += m.confirmed_orders || 0;
-      totalRevenueDzd += m.revenue_dzd || ((m.confirmed_orders || 0) * 4500);
+    // 1. Merchants count & registration breakdown
+    const totalMerchants = merchants.length;
+    const newMerchantsThisWeek = merchants.filter((m) => {
+      if (!m.created_at) return false;
+      const d = new Date(m.created_at);
+      return d >= sevenDaysAgo;
+    }).length;
+    const newMerchantsThisMonth = merchants.filter((m) => {
+      if (!m.created_at) return false;
+      const d = new Date(m.created_at);
+      return d >= startOfMonth;
+    }).length;
+
+    // 2. Commandes totales (COUNT(*) from orders table across all merchants)
+    const totalOrdersAllTime = orders.length;
+
+    // 3. Commandes ce mois
+    const ordersThisMonth = orders.filter((o) => {
+      if (!o.created_at) return false;
+      const d = new Date(o.created_at);
+      return d >= startOfMonth;
     });
+    const totalOrdersThisMonth = ordersThisMonth.length;
 
-    const overallRate = totalOrdersAllTime > 0 
-      ? Math.round((totalConfirmedOrders / totalOrdersAllTime) * 1000) / 10
-      : (platformStats.overallConfirmationRate || 0);
+    // 4. Revenu confirmé ce mois: SUM(price/amount) from orders where status='confirmed' and created_at in current month
+    const confirmedThisMonthOrders = ordersThisMonth.filter((o) => o.status === 'confirmed');
+    const totalConfirmedRevenueThisMonth = confirmedThisMonthOrders.reduce((sum, o) => {
+      const p = Number(o.price || o.amount || 0);
+      return sum + p;
+    }, 0);
+
+    // 5. Taux confirmation global: (COUNT(confirmed) / COUNT(total)) * 100
+    const totalConfirmedAllTime = orders.filter((o) => o.status === 'confirmed').length;
+    const overallConfirmationRate = totalOrdersAllTime > 0
+      ? Math.round((totalConfirmedAllTime / totalOrdersAllTime) * 1000) / 10
+      : 0;
 
     return {
-      totalMerchants: totalCount,
-      newMerchantsThisWeek: platformStats.newMerchantsThisWeek || 14,
-      newMerchantsThisMonth: platformStats.newMerchantsThisMonth || 42,
-      totalOrdersAllTime: totalOrdersAllTime || platformStats.totalOrdersAllTime || 0,
-      totalOrdersThisMonth: platformStats.totalOrdersThisMonth || 12450,
-      totalConfirmedRevenueThisMonth: totalRevenueDzd || platformStats.totalConfirmedRevenueThisMonth || 0,
-      overallConfirmationRate: overallRate
+      totalMerchants,
+      newMerchantsThisWeek,
+      newMerchantsThisMonth,
+      totalOrdersAllTime,
+      totalOrdersThisMonth,
+      totalConfirmedRevenueThisMonth,
+      overallConfirmationRate
     };
-  }, [merchants, platformStats]);
+  }, [merchants, orders]);
 
   // Filter & Sort Merchants
   const filteredMerchants = useMemo(() => {

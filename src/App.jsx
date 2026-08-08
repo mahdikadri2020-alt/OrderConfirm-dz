@@ -71,13 +71,21 @@ export default function App() {
   });
 
   // Admin Data State
-  const [adminMerchants, setAdminMerchants] = useState(mockAdminMerchants);
+  const [adminMerchants, setAdminMerchants] = useState([]);
   const [pendingAccountRequests, setPendingAccountRequests] = useState([]);
   const [adminOrders, setAdminOrders] = useState([]);
   const [adminTemplates, setAdminTemplates] = useState([]);
   const [adminMessages, setAdminMessages] = useState([]);
   const [adminSubscriptions, setAdminSubscriptions] = useState([]);
-  const [platformStats, setPlatformStats] = useState(mockPlatformStats);
+  const [platformStats, setPlatformStats] = useState({
+    totalMerchants: 0,
+    newMerchantsThisWeek: 0,
+    newMerchantsThisMonth: 0,
+    totalOrdersAllTime: 0,
+    totalOrdersThisMonth: 0,
+    totalConfirmedRevenueThisMonth: 0,
+    overallConfirmationRate: 0
+  });
 
   // Listen to browser navigation & pathname updates
   useEffect(() => {
@@ -1058,6 +1066,7 @@ export default function App() {
           {activeAdminTab === 'overview' && (
             <AdminOverviewTab
               merchants={adminMerchants}
+              orders={adminOrders}
               platformStats={platformStats}
               onToggleMerchantStatus={handleToggleMerchantStatus}
               onChangeMerchantPlan={handleChangeMerchantPlan}
@@ -1077,6 +1086,7 @@ export default function App() {
           {activeAdminTab === 'merchants' && (
             <AdminOverviewTab
               merchants={adminMerchants}
+              orders={adminOrders}
               platformStats={platformStats}
               onToggleMerchantStatus={handleToggleMerchantStatus}
               onChangeMerchantPlan={handleChangeMerchantPlan}
