@@ -86,18 +86,21 @@ serve(async (req) => {
       try {
         let isSuccess = false;
         if (N8N_WEBHOOK_URL) {
-          const wahaRes = await fetch(N8N_WEBHOOK_URL, {
+          const n8nRes = await fetch(N8N_WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               order_id: newOrder.id,
               merchant_id,
+              customer_name,
               customer_phone,
+              product,
+              price,
               message: formattedMessage,
               created_at: newOrder.created_at
             })
           });
-          isSuccess = wahaRes.ok;
+          isSuccess = n8nRes.ok;
         }
 
         const finalStatus = isSuccess ? "sent" : "failed";
@@ -116,7 +119,7 @@ serve(async (req) => {
           await supabase.from("orders").update({ initial_message_sent: true }).eq("id", newOrder.id);
           n8nResponseStatus = "triggered_immediate";
         } else {
-          n8nResponseStatus = "failed_waha";
+          n8nResponseStatus = "failed_send";
         }
       } catch (n8nErr) {
         console.error("n8n instant call failed:", n8nErr);

@@ -565,19 +565,22 @@ export default function App() {
           const formattedMessage = `Bonjour ${data.customer_name || 'Client'} 👋, merci pour votre commande de ${data.product || 'votre produit'} (${data.price || ''} DA). Veuillez répondre par 1 pour CONFIRMER ou 2 pour ANNULER.`;
 
           try {
-            const wahaRes = await fetch('https://n8n.srv1797289.hstgr.cloud/webhook/send-whatsapp-confirm', {
+            const n8nRes = await fetch('https://n8n.srv1797289.hstgr.cloud/webhook/send-whatsapp-confirm', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 order_id: data.id,
                 merchant_id: data.merchant_id,
+                customer_name: data.customer_name,
                 customer_phone: data.customer_phone,
+                product: data.product,
+                price: data.price,
                 message: formattedMessage,
                 created_at: data.created_at
               })
             });
 
-            const isSuccess = wahaRes.ok;
+            const isSuccess = n8nRes.ok;
             const finalStatus = isSuccess ? 'sent' : 'failed';
 
             await supabase.from('whatsapp_messages').insert([
