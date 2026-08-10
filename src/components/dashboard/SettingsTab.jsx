@@ -5,7 +5,7 @@ export default function SettingsTab({ merchant, onSaveSettings }) {
   const [businessName, setBusinessName] = useState(merchant.business_name || '');
   const [phone, setPhone] = useState(merchant.phone || '');
   const [initialSendDelayMinutes, setInitialSendDelayMinutes] = useState(String(merchant.initial_send_delay_minutes ?? '0'));
-  const [retryHours, setRetryHours] = useState('2');
+  const [retryHours, setRetryHours] = useState(String(merchant.reminder_delay_hours ?? '2'));
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleSubmit = (e) => {
@@ -13,7 +13,8 @@ export default function SettingsTab({ merchant, onSaveSettings }) {
     onSaveSettings({
       business_name: businessName,
       phone: phone,
-      initial_send_delay_minutes: Number(initialSendDelayMinutes)
+      initial_send_delay_minutes: Number(initialSendDelayMinutes),
+      reminder_delay_hours: Number(retryHours)
     });
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2000);
