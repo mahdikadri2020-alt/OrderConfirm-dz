@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Search, Building, Check, Sparkles } from 'lucide-react';
+import { MessageSquare, Search, Building, Check } from 'lucide-react';
 
 export default function AdminTemplatesTab({ templates = [] }) {
   const [searchQuery, setSearchQuery] = useState('');
