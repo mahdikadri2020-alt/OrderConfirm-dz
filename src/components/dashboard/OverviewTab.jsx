@@ -21,7 +21,7 @@ export default function OverviewTab({ orders = [], onSelectTab, onOpenAddOrder, 
   const totalOrders = orders.length;
   const confirmedOrders = useMemo(() => orders.filter(o => o.status === 'confirmed').length, [orders]);
   const rejectedOrders = useMemo(() => orders.filter(o => o.status === 'rejected').length, [orders]);
-  const pendingOrders = useMemo(() => orders.filter(o => o.status === 'pending').length, [orders]);
+  const pendingOrders = useMemo(() => orders.filter(o => o.status === 'pending' || o.status === 'needs_follow_up').length, [orders]);
   
   const confirmationRate = useMemo(() => {
     return totalOrders > 0 ? ((confirmedOrders / totalOrders) * 100).toFixed(1) : '0';

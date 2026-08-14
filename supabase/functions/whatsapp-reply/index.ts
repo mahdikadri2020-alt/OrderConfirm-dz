@@ -23,10 +23,10 @@ serve(async (req) => {
     const body = await req.json();
     const { order_id, merchant_id, reply_text, status } = body;
 
-    // status can be 'confirmed', 'rejected', or 'no_reply'
+    // status can be 'confirmed', 'rejected', 'no_reply', or 'needs_follow_up'
     if (!order_id || !status) {
       return new Response(
-        JSON.stringify({ error: "Champs requis manquants: order_id et status ('confirmed', 'rejected', 'no_reply')" }),
+        JSON.stringify({ error: "Champs requis manquants: order_id et status ('confirmed', 'rejected', 'no_reply', 'needs_follow_up')" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

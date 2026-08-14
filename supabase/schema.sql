@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
   price NUMERIC NOT NULL,
   wilaya TEXT NOT NULL,
   address TEXT,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'rejected', 'no_reply')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'rejected', 'no_reply', 'needs_follow_up')),
   scheduled_send_at TIMESTAMPTZ,
   initial_message_sent BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now(),

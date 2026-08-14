@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ShoppingBag, Search, Filter, CheckCircle2, XCircle, Clock, Building, MapPin } from 'lucide-react';
+import { ShoppingBag, Search, Filter, CheckCircle2, XCircle, Clock, Building, MapPin, PhoneCall, AlertCircle } from 'lucide-react';
 
 export default function AdminOrdersTab({ orders = [] }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,8 +56,10 @@ export default function AdminOrdersTab({ orders = [] }) {
           >
             <option value="all">Tous les statuts</option>
             <option value="confirmed">Confirmées uniquement</option>
+            <option value="needs_follow_up">À rappeler uniquement</option>
             <option value="pending">En attente uniquement</option>
             <option value="rejected">Annulées uniquement</option>
+            <option value="no_reply">Sans réponse uniquement</option>
           </select>
         </div>
       </div>
@@ -129,11 +131,15 @@ export default function AdminOrdersTab({ orders = [] }) {
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-heading font-bold border ${
                           order.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
                           order.status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                          order.status === 'needs_follow_up' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20 font-extrabold animate-pulse' :
+                          order.status === 'no_reply' ? 'bg-slate-500/10 text-slate-600 border-slate-500/20' :
                           'bg-amber-500/10 text-amber-600 border-amber-500/20'
                         }`}>
                           {order.status === 'confirmed' && <><CheckCircle2 className="h-3 w-3" /> Confirmé</>}
                           {order.status === 'rejected' && <><XCircle className="h-3 w-3" /> Annulé</>}
+                          {order.status === 'needs_follow_up' && <><PhoneCall className="h-3 w-3 text-orange-600" /> 📞 À rappeler</>}
                           {order.status === 'pending' && <><Clock className="h-3 w-3" /> En attente</>}
+                          {order.status === 'no_reply' && <><AlertCircle className="h-3 w-3" /> Sans réponse</>}
                         </span>
                       </td>
 

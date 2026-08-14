@@ -16,7 +16,8 @@ import {
   AlertCircle,
   ShoppingBag,
   Pencil,
-  Trash2
+  Trash2,
+  PhoneCall
 } from 'lucide-react';
 import { ALGERIAN_WILAYAS } from '../../constants/wilayas';
 
@@ -73,6 +74,7 @@ export default function OrdersTab({
     return {
       all: safeOrders.length,
       pending: safeOrders.filter(o => o?.status === 'pending').length,
+      needs_follow_up: safeOrders.filter(o => o?.status === 'needs_follow_up').length,
       confirmed: safeOrders.filter(o => o?.status === 'confirmed').length,
       rejected: safeOrders.filter(o => o?.status === 'rejected').length,
       no_reply: safeOrders.filter(o => o?.status === 'no_reply').length,
@@ -317,6 +319,7 @@ export default function OrdersTab({
           {[
             { id: 'all', label: 'Toutes', count: counts.all },
             { id: 'pending', label: 'En attente', count: counts.pending },
+            { id: 'needs_follow_up', label: 'À rappeler', count: counts.needs_follow_up },
             { id: 'confirmed', label: 'Confirmées', count: counts.confirmed },
             { id: 'rejected', label: 'Annulées', count: counts.rejected },
             { id: 'no_reply', label: 'Sans réponse', count: counts.no_reply },
@@ -393,11 +396,13 @@ export default function OrdersTab({
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-heading font-bold border shrink-0 ${
                     order.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
                     order.status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                    order.status === 'needs_follow_up' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20 font-extrabold animate-pulse' :
                     order.status === 'no_reply' ? 'bg-slate-500/10 text-slate-600 border-slate-500/20' :
                     'bg-amber-500/10 text-amber-600 border-amber-500/20'
                   }`}>
                     {order.status === 'confirmed' && <><CheckCircle2 className="h-3 w-3" /> Confirmé</>}
                     {order.status === 'rejected' && <><XCircle className="h-3 w-3" /> Annulé</>}
+                    {order.status === 'needs_follow_up' && <><PhoneCall className="h-3 w-3 text-orange-600" /> 📞 À rappeler</>}
                     {order.status === 'pending' && <><Clock className="h-3 w-3" /> En attente</>}
                     {order.status === 'no_reply' && <><AlertCircle className="h-3 w-3" /> Sans réponse</>}
                   </span>
@@ -515,11 +520,13 @@ export default function OrdersTab({
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-heading font-bold border ${
                         order.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
                         order.status === 'rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                        order.status === 'needs_follow_up' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20 font-extrabold animate-pulse' :
                         order.status === 'no_reply' ? 'bg-slate-500/10 text-slate-600 border-slate-500/20' :
                         'bg-amber-500/10 text-amber-600 border-amber-500/20'
                       }`}>
                         {order.status === 'confirmed' && <><CheckCircle2 className="h-3 w-3" /> Confirmé</>}
                         {order.status === 'rejected' && <><XCircle className="h-3 w-3" /> Annulé</>}
+                        {order.status === 'needs_follow_up' && <><PhoneCall className="h-3 w-3 text-orange-600" /> 📞 À rappeler</>}
                         {order.status === 'pending' && <><Clock className="h-3 w-3" /> En attente</>}
                         {order.status === 'no_reply' && <><AlertCircle className="h-3 w-3" /> Sans réponse</>}
                       </span>
@@ -554,13 +561,20 @@ export default function OrdersTab({
                           <button className="h-7 w-7 rounded-lg hover:bg-secondary flex items-center justify-center text-muted-foreground">
                             <MoreVertical className="h-3.5 w-3.5" />
                           </button>
-                          <div className="absolute right-0 top-8 bg-background border border-border rounded-xl shadow-lg p-1 hidden group-hover:block z-30 w-40 text-left">
+                          <div className="absolute right-0 top-8 bg-background border border-border rounded-xl shadow-lg p-1 hidden group-hover:block z-30 w-44 text-left">
                             <button
                               onClick={() => onUpdateOrderStatus && onUpdateOrderStatus(order.id, 'confirmed')}
                               className="w-full text-left px-2.5 py-1.5 text-[11px] hover:bg-emerald-50 text-emerald-600 rounded-md font-heading font-semibold flex items-center gap-1.5"
                             >
                               <CheckCircle2 className="h-3 w-3" />
                               <span>Marquer Confirmé</span>
+                            </button>
+                            <button
+                              onClick={() => onUpdateOrderStatus && onUpdateOrderStatus(order.id, 'needs_follow_up')}
+                              className="w-full text-left px-2.5 py-1.5 text-[11px] hover:bg-orange-50 text-orange-600 rounded-md font-heading font-semibold flex items-center gap-1.5"
+                            >
+                              <PhoneCall className="h-3 w-3" />
+                              <span>Marquer À rappeler</span>
                             </button>
                             <button
                               onClick={() => onUpdateOrderStatus && onUpdateOrderStatus(order.id, 'rejected')}
@@ -812,6 +826,7 @@ export default function OrdersTab({
                     className="w-full px-3 py-2 bg-secondary/50 border border-border rounded-xl text-xs font-heading font-semibold focus:ring-2 focus:ring-ring"
                   >
                     <option value="pending">En attente</option>
+                    <option value="needs_follow_up">📞 À rappeler</option>
                     <option value="confirmed">Confirmé</option>
                     <option value="rejected">Annulé</option>
                     <option value="no_reply">Sans réponse</option>
