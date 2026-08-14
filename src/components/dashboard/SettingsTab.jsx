@@ -8,6 +8,7 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
   const [remindersEnabled, setRemindersEnabled] = useState(merchant.reminders_enabled !== false);
   const [retryHours, setRetryHours] = useState(String(merchant.reminder_delay_hours ?? '2'));
   const [maxRemindersCount, setMaxRemindersCount] = useState(String(merchant.max_reminders_count ?? '2'));
+  const [followUpDelayHours, setFollowUpDelayHours] = useState(String(merchant.follow_up_delay_hours ?? '2'));
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleSubmit = (e) => {
@@ -19,7 +20,8 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
         initial_send_delay_minutes: Number(initialSendDelayMinutes),
         reminder_delay_hours: Number(retryHours),
         reminders_enabled: remindersEnabled,
-        max_reminders_count: Number(maxRemindersCount)
+        max_reminders_count: Number(maxRemindersCount),
+        follow_up_delay_hours: Number(followUpDelayHours)
       });
     }
     setSaveSuccess(true);
@@ -108,7 +110,7 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
                   <p className="text-[11px] text-muted-foreground">
                     {remindersEnabled 
                       ? 'Les relances seront envoyées automatiquement selon vos règles avant le passage en "À rappeler".'
-                      : 'Relances désactivées. La commande passera directement en "À rappeler" après le délai choisi.'}
+                      : 'Relances désactivées. La commande passera en "À rappeler" après le délai sans réponse choisi.'}
                   </p>
                 </div>
               </div>
@@ -132,9 +134,10 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
                   <span className="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Intervalle</span>
                 </label>
                 <select
+                  disabled={!remindersEnabled}
                   value={retryHours}
                   onChange={(e) => setRetryHours(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs font-heading font-semibold text-foreground focus:ring-2 focus:ring-ring"
+                  className="w-full px-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs font-heading font-semibold text-foreground focus:ring-2 focus:ring-ring disabled:opacity-50"
                 >
                   <option value="1">1 heure sans réponse</option>
                   <option value="2">2 heures sans réponse (Recommandé)</option>
@@ -144,7 +147,7 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
                   <option value="24">24 heures sans réponse</option>
                 </select>
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  Temps d'attente sans réponse de la part du client.
+                  Temps d'attente sans réponse entre chaque relance automatique.
                 </p>
               </div>
 
@@ -165,11 +168,38 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
                   <option value="4">4 relances automatiques</option>
                   <option value="5">5 relances automatiques</option>
                 </select>
-                <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
-                  <PhoneCall className="h-3 w-3 text-orange-600 shrink-0" />
-                  <span>Après ces relances, la commande passe en <strong>"📞 À rappeler"</strong>.</span>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Nombre de relances avant de transmettre au marchand.
                 </p>
               </div>
+            </div>
+
+            {/* Section 4: Follow-up Status Transition Delay */}
+            <div className="pt-3">
+              <label className="block text-xs font-heading font-semibold text-foreground mb-1.5 flex items-center justify-between">
+                <span>Délai d'attente avant passage en "📞 À rappeler" (heures)</span>
+                <span className="text-[10px] font-bold text-orange-600 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">Passage en À rappeler</span>
+              </label>
+              <select
+                value={followUpDelayHours}
+                onChange={(e) => setFollowUpDelayHours(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs font-heading font-semibold text-foreground focus:ring-2 focus:ring-ring"
+              >
+                <option value="1">1 heure sans réponse</option>
+                <option value="2">2 heures sans réponse (Recommandé)</option>
+                <option value="4">4 heures sans réponse</option>
+                <option value="6">6 heures sans réponse</option>
+                <option value="12">12 heures sans réponse</option>
+                <option value="24">24 heures sans réponse</option>
+              </select>
+              <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+                <PhoneCall className="h-3 w-3 text-orange-600 shrink-0" />
+                <span>
+                  {remindersEnabled
+                    ? 'Temps à attendre APPRÈS la dernière relance sans réponse pour faire passer la commande en "📞 À rappeler".'
+                    : 'Temps à attendre APPRÈS le 1er message sans réponse pour faire passer la commande en "📞 À rappeler".'}
+                </span>
+              </p>
             </div>
           </div>
 

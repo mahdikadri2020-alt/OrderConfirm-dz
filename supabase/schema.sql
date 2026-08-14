@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.merchants (
   reminder_delay_hours INTEGER DEFAULT 2,
   reminders_enabled BOOLEAN DEFAULT true,
   max_reminders_count INTEGER DEFAULT 2,
+  follow_up_delay_hours INTEGER DEFAULT 2,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
