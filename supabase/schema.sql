@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS public.merchants (
   status TEXT DEFAULT 'active',
   is_admin BOOLEAN DEFAULT false,
   initial_send_delay_minutes INTEGER DEFAULT 0,
+  reminder_delay_hours INTEGER DEFAULT 2,
+  reminders_enabled BOOLEAN DEFAULT true,
+  max_reminders_count INTEGER DEFAULT 2,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

@@ -776,7 +776,9 @@ export default function App() {
           phone: updatedMerchant.phone,
           status: updatedMerchant.status,
           initial_send_delay_minutes: updatedMerchant.initial_send_delay_minutes ?? 0,
-          reminder_delay_hours: updatedMerchant.reminder_delay_hours ?? 2
+          reminder_delay_hours: updatedMerchant.reminder_delay_hours ?? 2,
+          reminders_enabled: updatedMerchant.reminders_enabled ?? true,
+          max_reminders_count: updatedMerchant.max_reminders_count ?? 2
         })
         .eq('id', merchant.id);
     }
