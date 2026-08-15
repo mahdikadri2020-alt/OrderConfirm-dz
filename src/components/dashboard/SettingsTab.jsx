@@ -87,6 +87,7 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
               className="w-full px-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs font-heading font-semibold text-foreground focus:ring-2 focus:ring-ring"
             >
               <option value="0">Immédiat (Dès la réception de la commande)</option>
+              <option value="2">2 minutes (Test rapide ⚡)</option>
               <option value="5">5 minutes après la commande</option>
               <option value="15">15 minutes après la commande</option>
               <option value="30">30 minutes après la commande</option>
@@ -139,6 +140,7 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
                   onChange={(e) => setRetryHours(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs font-heading font-semibold text-foreground focus:ring-2 focus:ring-ring disabled:opacity-50"
                 >
+                  <option value="0.0333">2 minutes (Test rapide ⚡)</option>
                   <option value="1">1 heure sans réponse</option>
                   <option value="2">2 heures sans réponse (Recommandé)</option>
                   <option value="4">4 heures sans réponse</option>
@@ -185,6 +187,7 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
                 onChange={(e) => setFollowUpDelayHours(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs font-heading font-semibold text-foreground focus:ring-2 focus:ring-ring"
               >
+                <option value="0.0333">2 minutes (Test rapide ⚡)</option>
                 <option value="1">1 heure sans réponse</option>
                 <option value="2">2 heures sans réponse (Recommandé)</option>
                 <option value="4">4 heures sans réponse</option>
