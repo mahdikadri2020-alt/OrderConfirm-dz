@@ -107,7 +107,7 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
             className="cursor-pointer flex items-center gap-2" 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <LogoIcon size={34} className="h-8.5 w-auto shrink-0" />
+            <LogoIcon size={36} className="h-9 w-9 shrink-0" />
             <span className="font-heading font-black text-lg tracking-tight text-foreground">
               OrderConfirm
             </span>
