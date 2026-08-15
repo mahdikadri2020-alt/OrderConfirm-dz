@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
-import { ArrowRight, Menu, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, Menu, X, Download } from 'lucide-react';
 import Logo, { LogoIcon } from '../common/Logo';
 
 export default function Navbar({ onOpenAuth, onGoToApp }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      setIsStandalone(standalone);
+    }
+  }, []);
 
   const handleNavClick = (anchor) => {
     setMobileMenuOpen(false);
@@ -24,6 +32,21 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
       onGoToApp();
     } else {
       onOpenAuth('signup');
+    }
+  };
+
+  const handleInstallApp = async () => {
+    const activePrompt = window.deferredPwaPrompt;
+    if (activePrompt) {
+      try {
+        await activePrompt.prompt();
+        const choice = await activePrompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          window.deferredPwaPrompt = null;
+        }
+      } catch (err) {
+        console.warn('PWA prompt execution:', err);
+      }
     }
   };
 
@@ -52,6 +75,16 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
 
           {/* Right: CTA Actions */}
           <div className="flex items-center gap-3">
+            {!isStandalone && (
+              <button
+                onClick={handleInstallApp}
+                className="rounded-full px-5 py-2.5 text-sm font-heading font-extrabold bg-white text-slate-900 hover:bg-slate-50 border border-slate-200/90 transition-all shadow-sm flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
+              >
+                <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
+                <span>Télécharger l'app ⚡</span>
+              </button>
+            )}
+
             <button
               onClick={handleLoginClick}
               className="rounded-full px-5 py-2.5 text-sm font-heading font-bold text-foreground hover:bg-secondary transition-all"
@@ -84,6 +117,16 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2">
+            {!isStandalone && (
+              <button
+                onClick={handleInstallApp}
+                className="rounded-full px-3 py-1.5 text-xs font-heading font-bold bg-white text-slate-900 border border-slate-200 shadow-xs flex items-center gap-1 cursor-pointer active:scale-95"
+              >
+                <Download className="h-3.5 w-3.5 text-emerald-600 stroke-[2.5]" />
+                <span>Télécharger ⚡</span>
+              </button>
+            )}
+
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg bg-secondary text-foreground hover:bg-secondary/80 transition-colors"
@@ -114,6 +157,19 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
           </nav>
 
           <div className="space-y-2.5 pt-1">
+            {!isStandalone && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleInstallApp();
+                }}
+                className="w-full py-3.5 bg-white text-slate-900 border border-slate-300 rounded-2xl text-xs font-heading font-extrabold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
+                <span>Télécharger l'application ⚡</span>
+              </button>
+            )}
+
             <button
               onClick={handleLoginClick}
               className="w-full py-3 bg-secondary hover:bg-secondary/80 text-foreground rounded-2xl text-xs font-heading font-bold transition-all border border-border"
