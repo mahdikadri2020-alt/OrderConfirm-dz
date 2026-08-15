@@ -208,13 +208,22 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Restore & Persist Supabase Session on Mount
+  // Restore & Persist Supabase Session on Mount (Facebook-style Persistent Session)
   useEffect(() => {
     if (isSupabaseConfigured) {
       // 1. Get local persistent session immediately
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
           setCurrentUser(session.user);
+          const currentPath = window.location.pathname.toLowerCase();
+          const isAdmin = session.user.email === 'mahdi.kadri2020@gmail.com' || currentPath.includes('admin');
+          if (isAdmin) {
+            setView('admin');
+            window.history.replaceState({}, '', '/admin-oc-2026');
+          } else if (currentPath === '/' || currentPath === '' || currentPath.includes('connexion') || currentPath.includes('landing')) {
+            setView('app');
+            window.history.replaceState({}, '', '/app');
+          }
         }
       });
 
@@ -222,6 +231,8 @@ export default function App() {
       const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_OUT') {
           setCurrentUser(null);
+          setView('landing');
+          window.history.replaceState({}, '', '/');
         } else if (session?.user) {
           setCurrentUser(session.user);
         }
