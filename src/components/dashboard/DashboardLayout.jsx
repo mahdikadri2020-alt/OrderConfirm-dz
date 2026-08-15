@@ -36,11 +36,89 @@ export default function DashboardLayout({
 
   const menuItems = [
     { id: 'overview', label: 'Vue d\'ensemble', icon: <Home className="h-4 w-4" /> },
-    { id: 'orders', label: 'Commandes', icon: <ShoppingBag className="h-4 w-4" />, badge: '12' },
+    { id: 'orders', label: 'Commandes', icon: <ShoppingBag className="h-4 w-4" /> },
     { id: 'templates', label: 'Modèles WhatsApp', icon: <MessageSquare className="h-4 w-4" /> },
     { id: 'settings', label: 'Paramètres', icon: <Settings className="h-4 w-4" /> },
     { id: 'apikeys', label: 'Clés API', icon: <Key className="h-4 w-4" /> },
   ];
+
+  const handleTestNotifications = async () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        const ctx = new AudioContext();
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
+        }
+        const now = ctx.currentTime;
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, now);
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.3);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880, now + 0.15);
+        gain2.gain.setValueAtTime(0.4, now + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.15);
+        osc2.stop(now + 0.6);
+      }
+    } catch (e) {
+      console.warn('Audio test notice:', e);
+    }
+
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      let currentPerm = Notification.permission;
+      if (currentPerm !== 'granted') {
+        currentPerm = await Notification.requestPermission();
+      }
+
+      if (currentPerm === 'granted') {
+        try {
+          if ('serviceWorker' in navigator) {
+            const reg = await navigator.serviceWorker.ready;
+            if (reg.active) {
+              reg.active.postMessage({
+                type: 'SHOW_NOTIFICATION',
+                title: '⚡ Test Réussi !',
+                body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
+                icon: '/official-logo-192.png',
+                url: '/app'
+              });
+            }
+            reg.showNotification('⚡ Test Réussi !', {
+              body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
+              icon: '/official-logo-192.png',
+              badge: '/official-logo-192.png',
+              vibrate: [200, 100, 200],
+              data: { url: '/app' }
+            });
+          } else {
+            new Notification('⚡ Test Réussi !', {
+              body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
+              icon: '/official-logo-192.png'
+            });
+          }
+        } catch (e) {
+          // Fallback handled
+        }
+      } else {
+        alert("⚠️ الإشعارات محظورة في متصفحك! يرجى الذهاب إلى إعدادات المتصفح -> إعدادات المواقع (Site Settings) -> السماح بالإشعارات لـ OrderConfirm.");
+      }
+    } else {
+      alert("⚠️ متصفحك الحالي لا يدعم إشعارات الـ Web Push.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-secondary/30 flex flex-col md:flex-row font-body text-foreground selection:bg-accent selection:text-white relative">
@@ -64,88 +142,48 @@ export default function DashboardLayout({
           {/* New Order Quick Action */}
           <button
             onClick={onOpenAddOrder}
-            className="w-full py-2.5 px-3 bg-accent text-white rounded-xl text-xs font-heading font-bold hover:bg-accent/90 transition-all flex items-center justify-center gap-2 shadow-xs"
+            className="w-full py-2.5 px-3 bg-accent text-white rounded-xl text-xs font-heading font-bold hover:bg-accent/90 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             <span>Nouvelle Commande</span>
           </button>
 
-          {/* Stealth Admin Portal Button */}
-          {merchant?.is_admin && (
-            <div className="pt-1">
-              <button
-                onClick={onGoToAdmin}
-                className="w-full py-1.5 px-3 bg-secondary/80 hover:bg-indigo-500/10 text-muted-foreground hover:text-indigo-600 border border-border/60 hover:border-indigo-500/20 rounded-xl text-[11px] font-heading font-semibold transition-all flex items-center justify-between group"
-                title="Espace Administrateur (Secret)"
-              >
-                <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-indigo-500 group-hover:scale-110 transition-transform" />
-                  <span>Espace Admin</span>
-                </div>
-                <span className="text-[9px] bg-indigo-500/10 text-indigo-600 px-1.5 py-0.2 rounded font-bold uppercase">Pro</span>
-              </button>
-            </div>
-          )}
-
-          {/* Navigation Links */}
+          {/* Navigation Items */}
           <nav className="space-y-1">
-            <span className="px-3 text-[10px] font-heading font-bold text-muted-foreground uppercase tracking-wider">Navigation</span>
-            <div className="mt-2 space-y-1">
-              {menuItems.map((item) => {
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-heading font-semibold transition-all ${
-                      isActive
-                        ? 'bg-accent/10 text-accent font-extrabold'
-                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                        isActive ? 'bg-accent text-white' : 'bg-secondary text-muted-foreground'
-                      }`}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            {menuItems.map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-heading font-bold transition-all ${
+                    isActive
+                      ? 'bg-accent text-white shadow-xs'
+                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </div>
+                </button>
+              );
+            })}
           </nav>
-
-          {/* Integrations Banner */}
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold flex items-center gap-1.5 text-amber-700">
-                <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-500" /> n8n Webhook
-              </span>
-              <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded font-bold">Actif</span>
-            </div>
-            <p className="text-[10px] text-muted-foreground leading-snug">
-              Vos messages WhatsApp sont prêts à être synchronisés avec votre workflow n8n.
-            </p>
-          </div>
         </div>
 
-        {/* Footer User Info */}
-        <div className="pt-4 border-t border-border/80 flex items-center justify-between">
+        {/* Bottom Sidebar User Info & Logout */}
+        <div className="pt-4 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-full bg-accent/20 text-accent font-bold flex items-center justify-center text-xs">
+            <div className="h-9 w-9 rounded-full bg-accent/15 text-accent font-heading font-black flex items-center justify-center text-xs">
               DZ
             </div>
-            <div className="text-left">
-              <span className="text-xs font-bold text-foreground block truncate max-w-[110px]">
+            <div>
+              <div className="font-heading font-extrabold text-xs text-foreground truncate max-w-[120px]">
                 {businessName}
-              </span>
-              <span className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> WhatsApp Lié
+              </div>
+              <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Actif
               </span>
             </div>
           </div>
@@ -153,7 +191,7 @@ export default function DashboardLayout({
           <button
             onClick={onLogout}
             title="Se déconnecter"
-            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors"
+            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
           </button>
@@ -174,8 +212,17 @@ export default function DashboardLayout({
 
         <div className="flex items-center gap-2">
           <button
+            onClick={handleTestNotifications}
+            title="Tester les notifications"
+            className="px-2 py-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-[10px] font-heading font-extrabold flex items-center gap-1 hover:bg-amber-500/20 transition-all cursor-pointer"
+          >
+            <Bell className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
+            <span>Tester 🔔</span>
+          </button>
+
+          <button
             onClick={onOpenAddOrder}
-            className="px-2.5 py-1.5 bg-accent text-white rounded-full text-[11px] font-heading font-bold flex items-center gap-1 shadow-xs"
+            className="px-2.5 py-1.5 bg-accent text-white rounded-full text-[11px] font-heading font-bold flex items-center gap-1 shadow-xs cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>+ Commande</span>
@@ -183,7 +230,7 @@ export default function DashboardLayout({
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="h-9 w-9 rounded-xl bg-secondary text-foreground flex items-center justify-center hover:bg-secondary/80 transition-colors"
+            className="h-9 w-9 rounded-xl bg-secondary text-foreground flex items-center justify-center hover:bg-secondary/80 transition-colors cursor-pointer"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -221,7 +268,7 @@ export default function DashboardLayout({
                     setMobileMenuOpen(false);
                     if (onGoToAdmin) onGoToAdmin();
                   }}
-                  className="w-full py-2.5 px-3 bg-indigo-600 text-white rounded-xl text-xs font-heading font-extrabold flex items-center justify-center gap-2 shadow-xs"
+                  className="w-full py-2.5 px-3 bg-indigo-600 text-white rounded-xl text-xs font-heading font-extrabold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                 >
                   <ShieldCheck className="h-4 w-4" />
                   <span>Espace Administrateur</span>
@@ -249,29 +296,9 @@ export default function DashboardLayout({
                         {item.icon}
                         <span>{item.label}</span>
                       </div>
-                      {item.badge && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          isActive ? 'bg-white/20 text-white' : 'bg-secondary text-muted-foreground'
-                        }`}>
-                          {item.badge}
-                        </span>
-                      )}
                     </button>
                   );
                 })}
-              </div>
-
-              {/* Integrations Banner */}
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold flex items-center gap-1.5 text-amber-700">
-                    <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-500" /> n8n Webhook
-                  </span>
-                  <span className="text-[9px] bg-amber-500 text-white px-1.5 py-0.2 rounded font-bold">Actif</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground">
-                  Synchronisé en temps réel avec votre bot WhatsApp.
-                </p>
               </div>
             </div>
 
@@ -280,7 +307,7 @@ export default function DashboardLayout({
                 setMobileMenuOpen(false);
                 onLogout();
               }}
-              className="w-full py-3 bg-rose-500/10 text-rose-600 rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-2 hover:bg-rose-500/20 transition-colors"
+              className="w-full py-3 bg-rose-500/10 text-rose-600 rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-2 hover:bg-rose-500/20 transition-colors cursor-pointer"
             >
               <LogOut className="h-4 w-4" />
               <span>Se déconnecter</span>
@@ -303,18 +330,13 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="pl-9 pr-4 py-1.5 bg-secondary/60 border border-border/70 rounded-full text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring w-60"
-              />
-            </div>
-
-            <div className="h-8 w-8 rounded-full bg-secondary text-muted-foreground flex items-center justify-center cursor-pointer hover:text-foreground">
-              <Bell className="h-4 w-4" />
-            </div>
+            <button
+              onClick={handleTestNotifications}
+              className="px-3.5 py-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-full text-xs font-heading font-extrabold flex items-center gap-2 hover:bg-amber-500/20 transition-all cursor-pointer shadow-xs"
+            >
+              <Bell className="h-4 w-4 text-amber-500 animate-pulse" />
+              <span>Tester les Notifications 🔔</span>
+            </button>
 
             <span className="px-3 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-heading font-bold">
               Pro Marchand
@@ -348,9 +370,6 @@ export default function DashboardLayout({
         >
           <ShoppingBag className="h-4.5 w-4.5" />
           <span className="text-[9px]">Commandes</span>
-          <span className="absolute -top-1 right-1 h-3.5 w-3.5 bg-accent text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-            12
-          </span>
         </button>
 
         <button
@@ -373,7 +392,6 @@ export default function DashboardLayout({
           <span className="text-[9px]">Paramètres</span>
         </button>
       </nav>
-
     </div>
   );
 }
