@@ -188,29 +188,37 @@ export default function App() {
     }
   };
 
-  const previousOrdersRef = useRef([]);
+  const isInitialOrderLoadRef = useRef(true);
+  const previousOrdersRef = useRef(new Map());
 
-  // Auto-Detect Order Status Changes (e.g. Confirmed by WhatsApp / n8n / Webhook)
+  // Auto-Detect Order Status Changes & New Actionable Orders (e.g. Confirmed by WhatsApp / n8n / Webhook)
   useEffect(() => {
-    if (orders && orders.length > 0) {
-      const prevMap = new Map(previousOrdersRef.current.map(o => [String(o.id), o.status]));
-      
-      orders.forEach(order => {
-        const orderIdStr = String(order.id);
-        const prevStatus = prevMap.get(orderIdStr);
+    if (!orders || orders.length === 0) return;
 
-        if (prevStatus && prevStatus !== order.status) {
-          if (['confirmed', 'rejected', 'needs_follow_up'].includes(order.status)) {
-            notifyOrderUpdate(order);
-          }
-        }
-      });
-
-      previousOrdersRef.current = orders.map(o => ({ id: String(o.id), status: o.status }));
+    // Record initial snapshot of existing orders without triggering notification spam on startup
+    if (isInitialOrderLoadRef.current) {
+      orders.forEach(o => previousOrdersRef.current.set(String(o.id), o.status));
+      isInitialOrderLoadRef.current = false;
+      return;
     }
+
+    // On subsequent updates:
+    orders.forEach(order => {
+      const idStr = String(order.id);
+      const prevStatus = previousOrdersRef.current.get(idStr);
+
+      const isStatusChanged = prevStatus !== undefined && prevStatus !== order.status;
+      const isNewConfirmedOrder = prevStatus === undefined && ['confirmed', 'rejected', 'needs_follow_up'].includes(order.status);
+
+      if (['confirmed', 'rejected', 'needs_follow_up'].includes(order.status) && (isStatusChanged || isNewConfirmedOrder)) {
+        notifyOrderUpdate(order);
+      }
+
+      previousOrdersRef.current.set(idStr, order.status);
+    });
   }, [orders]);
 
-  // Periodic Background Order Synchronization (Every 10 Seconds)
+  // Periodic Background Order Synchronization (Every 8 Seconds)
   useEffect(() => {
     if (isSupabaseConfigured && currentUser && merchant?.id && view === 'app') {
       const interval = setInterval(async () => {
@@ -231,7 +239,7 @@ export default function App() {
         } catch (e) {
           // Ignore network glitch during poll
         }
-      }, 10000);
+      }, 8000);
 
       return () => clearInterval(interval);
     }
