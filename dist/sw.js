@@ -1,5 +1,5 @@
 // OrderConfirm PWA Service Worker & Web Push Handler
-const CACHE_NAME = 'orderconfirm-v1';
+const CACHE_NAME = 'orderconfirm-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
