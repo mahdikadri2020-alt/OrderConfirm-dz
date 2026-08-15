@@ -1,5 +1,5 @@
 // OrderConfirm PWA Service Worker & Web Push Handler
-const CACHE_NAME = 'orderconfirm-v8';
+const CACHE_NAME = 'orderconfirm-v9';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -9,19 +9,17 @@ const ASSETS_TO_CACHE = [
   '/official-logo-maskable.png'
 ];
 
-// Install Event: Cache Core Assets
+// Install Event: Cache Core Assets & Skip Waiting
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch(() => {
-        // Ignore cache errors during install for dynamic assets
-      });
+      return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
     })
   );
 });
 
-// Activate Event: Cleanup Old Caches (WITHOUT touching localStorage or session)
+// Activate Event: Cleanup Old Caches & Claim Clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -32,9 +30,8 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event: Network First Strategy with Offline Cache Fallback
+// Fetch Event: Network First Strategy
 self.addEventListener('fetch', (event) => {
-  // Only intercept GET requests for same origin or static assets, skip API / Supabase / Webhook requests
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== location.origin) return;
@@ -61,10 +58,10 @@ self.addEventListener('fetch', (event) => {
 // Web Push Event Handler: Display Native Push Notifications
 self.addEventListener('push', (event) => {
   let data = {
-    title: 'OrderConfirm 🔔',
+    title: 'OrderConfirm ⚡',
     body: 'Nouvelle mise à jour de commande disponible.',
-    icon: '/icon-192.png',
-    url: '/'
+    icon: '/official-logo-192.png',
+    url: '/app'
   };
 
   if (event.data) {
@@ -77,11 +74,11 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body || 'Mise à jour de votre commande',
-    icon: data.icon || '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [100, 50, 100],
+    icon: data.icon || '/official-logo-192.png',
+    badge: '/official-logo-192.png',
+    vibrate: [200, 100, 200],
     data: {
-      url: data.url || '/'
+      url: data.url || '/app'
     },
     actions: [
       { action: 'open', title: 'Voir la commande' }
@@ -89,14 +86,33 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'OrderConfirm Notification', options)
+    self.registration.showNotification(data.title || 'OrderConfirm ⚡', options)
   );
+});
+
+// Client PostMessage Event Handler: Trigger Native Push Notification on Demand
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, body, icon, url } = event.data;
+    const options = {
+      body: body || 'Mise à jour de votre commande',
+      icon: icon || '/official-logo-192.png',
+      badge: '/official-logo-192.png',
+      vibrate: [200, 100, 200],
+      data: {
+        url: url || '/app'
+      }
+    };
+    event.waitUntil(
+      self.registration.showNotification(title || 'OrderConfirm ⚡', options)
+    );
+  }
 });
 
 // Notification Click Event Handler: Focus or Open App Window
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/';
+  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/app';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {

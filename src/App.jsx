@@ -137,20 +137,32 @@ export default function App() {
       setLiveToast({ title, message, status, time: new Date().toLocaleTimeString() });
       setTimeout(() => setLiveToast(null), 7000);
 
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
         try {
-          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          if ('serviceWorker' in navigator) {
             navigator.serviceWorker.ready.then((reg) => {
-              reg.showNotification(title, {
-                body: message,
-                icon: '/official-logo-192.png',
-                badge: '/official-logo-192.png',
-                tag: `order-${updatedOrder.id}`,
-                vibrate: [200, 100, 200],
-                data: { url: '/app' }
-              });
+              if (reg.active) {
+                reg.active.postMessage({
+                  type: 'SHOW_NOTIFICATION',
+                  title,
+                  body: message,
+                  icon: '/official-logo-192.png',
+                  url: '/app'
+                });
+              }
+              if (Notification.permission === 'granted') {
+                reg.showNotification(title, {
+                  body: message,
+                  icon: '/official-logo-192.png',
+                  badge: '/official-logo-192.png',
+                  tag: `order-${updatedOrder.id}`,
+                  vibrate: [200, 100, 200],
+                  data: { url: '/app' }
+                });
+              }
             });
-          } else {
+          }
+          if (Notification.permission === 'granted') {
             new Notification(title, {
               body: message,
               icon: '/official-logo-192.png',
