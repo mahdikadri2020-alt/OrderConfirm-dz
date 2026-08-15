@@ -219,7 +219,7 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
                 className="w-full px-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs font-heading font-semibold text-foreground focus:ring-2 focus:ring-ring font-heading font-bold"
               >
                 <option value="needs_follow_up">📞 À rappeler / وجب الاتصال بالزبون (Recommandé)</option>
-                <option value="no_reply">🚫 Sans réponse / لم يرد (Marquer comme non joignable)</option>
+                <option value="confirmed">✅ Confirmée / مؤكدة (تأكيد الطلبية تلقائياً)</option>
                 <option value="rejected">❌ Annulée / ملغاة (Marquer comme annulée)</option>
               </select>
               <p className="text-[11px] text-muted-foreground mt-1">
