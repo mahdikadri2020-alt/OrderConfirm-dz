@@ -42,84 +42,6 @@ export default function DashboardLayout({
     { id: 'apikeys', label: 'Clés API', icon: <Key className="h-4 w-4" /> },
   ];
 
-  const handleTestNotifications = async () => {
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) {
-        const ctx = new AudioContext();
-        if (ctx.state === 'suspended') {
-          await ctx.resume();
-        }
-        const now = ctx.currentTime;
-        const osc1 = ctx.createOscillator();
-        const gain1 = ctx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(587.33, now);
-        gain1.gain.setValueAtTime(0.3, now);
-        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc1.connect(gain1);
-        gain1.connect(ctx.destination);
-        osc1.start(now);
-        osc1.stop(now + 0.3);
-
-        const osc2 = ctx.createOscillator();
-        const gain2 = ctx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(880, now + 0.15);
-        gain2.gain.setValueAtTime(0.4, now + 0.15);
-        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
-        osc2.connect(gain2);
-        gain2.connect(ctx.destination);
-        osc2.start(now + 0.15);
-        osc2.stop(now + 0.6);
-      }
-    } catch (e) {
-      console.warn('Audio test notice:', e);
-    }
-
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      let currentPerm = Notification.permission;
-      if (currentPerm !== 'granted') {
-        currentPerm = await Notification.requestPermission();
-      }
-
-      if (currentPerm === 'granted') {
-        try {
-          if ('serviceWorker' in navigator) {
-            const reg = await navigator.serviceWorker.ready;
-            if (reg.active) {
-              reg.active.postMessage({
-                type: 'SHOW_NOTIFICATION',
-                title: '⚡ Test Réussi !',
-                body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
-                icon: '/official-logo-192.png',
-                url: '/app'
-              });
-            }
-            reg.showNotification('⚡ Test Réussi !', {
-              body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
-              icon: '/official-logo-192.png',
-              badge: '/official-logo-192.png',
-              vibrate: [200, 100, 200],
-              data: { url: '/app' }
-            });
-          } else {
-            new Notification('⚡ Test Réussi !', {
-              body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
-              icon: '/official-logo-192.png'
-            });
-          }
-        } catch (e) {
-          // Fallback handled
-        }
-      } else {
-        alert("⚠️ الإشعارات محظورة في متصفحك! يرجى الذهاب إلى إعدادات المتصفح -> إعدادات المواقع (Site Settings) -> السماح بالإشعارات لـ OrderConfirm.");
-      }
-    } else {
-      alert("⚠️ متصفحك الحالي لا يدعم إشعارات الـ Web Push.");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-secondary/30 flex flex-col md:flex-row font-body text-foreground selection:bg-accent selection:text-white relative">
       
@@ -198,7 +120,7 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* 2. Mobile Top App Bar (< 768px) - CLEAN HEADER */}
+      {/* 2. Mobile Top App Bar (< 768px) */}
       <header className="md:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border/80 px-3.5 py-2.5 flex items-center justify-between shadow-2xs">
         <div className="flex items-center gap-2.5">
           <LogoIcon size={32} className="h-8 w-auto shrink-0" />
@@ -291,18 +213,6 @@ export default function DashboardLayout({
                   );
                 })}
               </div>
-
-              {/* Subtly Placed Notification Tester in Drawer Menu */}
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleTestNotifications();
-                }}
-                className="w-full py-2.5 px-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl text-xs font-heading font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <Bell className="h-4 w-4 text-amber-500 animate-pulse" />
-                <span>Tester les Notifications 🔔</span>
-              </button>
             </div>
 
             <button
