@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, Menu, X } from 'lucide-react';
+import { ArrowRight, Menu, X, Download } from 'lucide-react';
 import Logo, { LogoIcon } from '../common/Logo';
 
 export default function Navbar({ onOpenAuth, onGoToApp }) {
@@ -27,11 +27,33 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
     }
   };
 
+  const handleInstallApp = async () => {
+    const activePrompt = window.deferredPwaPrompt;
+    if (activePrompt) {
+      try {
+        activePrompt.prompt();
+        const { outcome } = await activePrompt.userChoice;
+        if (outcome === 'accepted') {
+          window.deferredPwaPrompt = null;
+        }
+      } catch (err) {
+        alert("انقر على خيارات المتصفح (⋮) ثم اختر 'تثبيت التطبيق' أو 'إضافة إلى الشاشة الرئيسية'.");
+      }
+    } else {
+      const ua = window.navigator.userAgent.toLowerCase();
+      if (/iphone|ipad|ipod/.test(ua)) {
+        alert("للتثبيت على iPhone:\n1. اضغط على زر مشاركة (Share ⎋) في أسفل Safari.\n2. اختر 'إضافة إلى الشاشة الرئيسية (Add to Home Screen)'.");
+      } else {
+        alert("لتثبيت التطبيق:\nاضغط على خيارات المتصفح (⋮) ثم اختر 'تثبيت التطبيق (Install App)' أو 'إضافة إلى الشاشة الرئيسية'.");
+      }
+    }
+  };
+
   return (
     <header className="w-full z-50 transition-all duration-300 relative bg-background/95 backdrop-blur-md border-b border-border/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-20 py-3.5 sm:py-5 font-body">
         
-        {/* DESKTOP NAVBAR (md:flex) - UNTOUCHED */}
+        {/* DESKTOP NAVBAR (md:flex) */}
         <div className="hidden md:flex items-center justify-between">
           {/* Left: Logo */}
           <div 
@@ -49,16 +71,25 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
           </nav>
 
           {/* Right: CTA Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleInstallApp}
+              className="rounded-full px-5 py-2.5 text-sm font-heading font-extrabold bg-white text-slate-900 hover:bg-slate-50 border border-slate-200/90 transition-all shadow-sm flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
+            >
+              <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
+              <span>تنزيل التطبيق ⚡</span>
+            </button>
+
             <button
               onClick={() => onOpenAuth('login')}
-              className="text-base font-heading font-bold text-muted-foreground hover:text-foreground px-4 py-2 transition-colors shrink-0"
+              className="text-base font-heading font-bold text-muted-foreground hover:text-foreground px-3 py-2 transition-colors shrink-0"
             >
               Se connecter
             </button>
+
             <button
               onClick={() => onGoToApp ? onGoToApp() : onOpenAuth('signup')}
-              className="rounded-full px-7 py-3 text-base font-heading font-extrabold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md flex items-center gap-2 group shrink-0"
+              className="rounded-full px-6 py-2.5 text-base font-heading font-extrabold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md flex items-center gap-2 group shrink-0"
             >
               <span>Essai gratuit</span>
               <ArrowRight className="h-4.5 w-4.5 group-hover:translate-x-0.5 transition-transform" />
@@ -118,6 +149,17 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
 
           {/* Vertically Stacked Mobile Buttons */}
           <div className="space-y-2.5 pt-1">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleInstallApp();
+              }}
+              className="w-full py-3.5 bg-white text-slate-900 border border-slate-300 rounded-2xl text-xs font-heading font-extrabold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
+              <span>تنزيل التطبيق ⚡ (Install App)</span>
+            </button>
+
             <button
               onClick={handleLoginClick}
               className="w-full py-3 bg-secondary hover:bg-secondary/80 text-foreground rounded-2xl text-xs font-heading font-bold transition-all border border-border"
