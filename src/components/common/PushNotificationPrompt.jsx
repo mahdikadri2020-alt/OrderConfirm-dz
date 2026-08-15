@@ -2,6 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { BellRing, Check, X, ShieldCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
+const VAPID_PUBLIC_KEY = 'BD6TK3sWhcfkHvDAfc5dio2LW4FjUcJqG8z5YImM-SL9w00NSRNJ5PKYvMJIAfHfbUmjSHcZz-s-N3U15DmySF4';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 export default function PushNotificationPrompt({ merchantId }) {
   const [permission, setPermission] = useState('default');
   const [isSupported, setIsSupported] = useState(false);
@@ -28,34 +41,37 @@ export default function PushNotificationPrompt({ merchantId }) {
       let subscription = await registration.pushManager.getSubscription();
 
       if (!subscription) {
-        // Create browser subscription endpoint
-        const dummyEndpoint = `https://push.orderconfirm.dz/sub/${mId}/${Date.now()}`;
-        subscription = {
-          endpoint: dummyEndpoint,
-          keys: {
-            p256dh: 'p256dh-key-' + Math.random().toString(36).substring(2),
-            auth: 'auth-key-' + Math.random().toString(36).substring(2)
-          }
-        };
+        try {
+          const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+          });
+        } catch (subErr) {
+          console.warn('Real pushManager subscribe fallback notice:', subErr);
+        }
       }
 
-      const p256dh = subscription.keys?.p256dh || (subscription.getKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))) : 'key-p256dh');
-      const auth = subscription.keys?.auth || (subscription.getKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth')))) : 'key-auth');
+      if (subscription) {
+        const subJson = subscription.toJSON();
+        const p256dh = subJson.keys?.p256dh || '';
+        const auth = subJson.keys?.auth || '';
 
-      await supabase.from('push_subscriptions').upsert(
-        [
-          {
-            merchant_id: mId,
-            endpoint: subscription.endpoint,
-            p256dh: p256dh,
-            auth: auth,
-            user_agent: navigator.userAgent
-          }
-        ],
-        { onConflict: 'endpoint' }
-      );
-      setSubscribedSuccess(true);
-      setTimeout(() => setSubscribedSuccess(false), 3000);
+        await supabase.from('push_subscriptions').upsert(
+          [
+            {
+              merchant_id: mId,
+              endpoint: subscription.endpoint,
+              p256dh: p256dh,
+              auth: auth,
+              user_agent: navigator.userAgent
+            }
+          ],
+          { onConflict: 'endpoint' }
+        );
+        setSubscribedSuccess(true);
+        setTimeout(() => setSubscribedSuccess(false), 3500);
+      }
     } catch (err) {
       console.warn('Push subscription sync notice:', err);
     }
@@ -82,7 +98,7 @@ export default function PushNotificationPrompt({ merchantId }) {
       return (
         <div className="fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 text-xs font-heading font-bold animate-bounce">
           <ShieldCheck className="h-4 w-4" />
-          <span>Notifications Push activées pour cet appareil !</span>
+          <span>Notifications Push VAPID activées (Appareil relié) !</span>
         </div>
       );
     }
@@ -99,13 +115,13 @@ export default function PushNotificationPrompt({ merchantId }) {
           <h4 className="text-xs font-heading font-extrabold text-foreground flex items-center gap-1.5">
             Activer les Notifications Push ⚡
           </h4>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Recevez un إشعار فوري sur votre téléphone et ordinateur dès qu'un client confirme, annule ou nécessite un rappel.
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            Recevez un son et un إشعار instantané lors de chaque confirmation de commande, même si l'application est fermée.
           </p>
         </div>
         <button
           onClick={() => setDismissed(true)}
-          className="text-muted-foreground hover:text-foreground p-1 rounded-lg transition-colors"
+          className="text-muted-foreground hover:text-foreground p-1"
         >
           <X className="h-4 w-4" />
         </button>
@@ -115,22 +131,16 @@ export default function PushNotificationPrompt({ merchantId }) {
         <button
           onClick={handleRequestPermission}
           disabled={loading}
-          className="flex-1 py-2.5 bg-accent text-white rounded-xl text-xs font-heading font-bold hover:bg-accent/90 transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
+          className="flex-1 py-2.5 bg-accent hover:bg-accent/90 text-white rounded-xl text-xs font-heading font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
         >
           {loading ? (
             <span>Activation...</span>
           ) : (
             <>
-              <Check className="h-3.5 w-3.5" />
+              <Check className="h-4 w-4" />
               <span>Activer les notifications</span>
             </>
           )}
-        </button>
-        <button
-          onClick={() => setDismissed(true)}
-          className="px-3.5 py-2.5 bg-secondary text-muted-foreground hover:text-foreground rounded-xl text-xs font-heading font-semibold transition-all"
-        >
-          Plus tard
         </button>
       </div>
     </div>
