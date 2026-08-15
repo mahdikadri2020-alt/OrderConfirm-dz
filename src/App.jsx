@@ -79,6 +79,102 @@ export default function App() {
   const [adminTemplates, setAdminTemplates] = useState([]);
   const [adminMessages, setAdminMessages] = useState([]);
   const [adminSubscriptions, setAdminSubscriptions] = useState([]);
+
+  // Live Toast & Push Trigger State
+  const [liveToast, setLiveToast] = useState(null);
+
+  const notifyOrderUpdate = (updatedOrder) => {
+    if (!updatedOrder) return;
+    const status = updatedOrder.status;
+
+    if (['confirmed', 'rejected', 'needs_follow_up'].includes(status)) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          const ctx = new AudioContext();
+          const now = ctx.currentTime;
+          const osc1 = ctx.createOscillator();
+          const gain1 = ctx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(587.33, now);
+          gain1.gain.setValueAtTime(0.3, now);
+          gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc1.connect(gain1);
+          gain1.connect(ctx.destination);
+          osc1.start(now);
+          osc1.stop(now + 0.3);
+
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(880, now + 0.15);
+          gain2.gain.setValueAtTime(0.4, now + 0.15);
+          gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start(now + 0.15);
+          osc2.stop(now + 0.6);
+        }
+      } catch (e) {
+        console.warn('Audio chime notice:', e);
+      }
+
+      const customerName = updatedOrder.customer_name || 'Client';
+      const priceText = (updatedOrder.price || updatedOrder.amount) ? `${updatedOrder.price || updatedOrder.amount} DA` : '';
+      const wilayaText = updatedOrder.wilaya || '';
+
+      let title = 'Commande Confirmée ! ⚡';
+      let message = `🎉 ${customerName} a confirmé sa commande ${priceText ? 'de ' + priceText : ''} ${wilayaText ? '(' + wilayaText + ')' : ''}`;
+
+      if (status === 'rejected') {
+        title = 'Commande Annulée ❌';
+        message = `❌ ${customerName} a annulé sa commande ${priceText ? '(' + priceText + ')' : ''}`;
+      } else if (status === 'needs_follow_up') {
+        title = 'Suivi Requis ⚠️';
+        message = `⚠️ ${customerName} demande des précisions sur sa commande.`;
+      }
+
+      setLiveToast({ title, message, status, time: new Date().toLocaleTimeString() });
+      setTimeout(() => setLiveToast(null), 7000);
+
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then((reg) => {
+              reg.showNotification(title, {
+                body: message,
+                icon: '/official-logo-192.png',
+                badge: '/official-logo-192.png',
+                tag: `order-${updatedOrder.id}`,
+                vibrate: [200, 100, 200],
+                data: { url: '/app' }
+              });
+            });
+          } else {
+            new Notification(title, {
+              body: message,
+              icon: '/official-logo-192.png',
+              tag: `order-${updatedOrder.id}`
+            });
+          }
+        } catch (e) {
+          console.warn('Native notification trigger notice:', e);
+        }
+      }
+
+      if (isSupabaseConfigured && (merchant?.id || updatedOrder.merchant_id)) {
+        supabase.functions.invoke('send-push-notification', {
+          body: {
+            merchant_id: updatedOrder.merchant_id || merchant?.id,
+            title: title,
+            body: message,
+            icon: '/official-logo-192.png',
+            url: '/app'
+          }
+        }).catch((err) => console.warn('Edge function push invoke notice:', err));
+      }
+    }
+  };
   const [platformStats, setPlatformStats] = useState({
     totalMerchants: 0,
     newMerchantsThisWeek: 0,
@@ -432,8 +528,10 @@ export default function App() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
           if (payload.eventType === 'INSERT') {
             setOrders((prev) => [payload.new, ...prev]);
+            notifyOrderUpdate(payload.new);
           } else if (payload.eventType === 'UPDATE') {
             setOrders((prev) => prev.map((o) => (o.id === payload.new.id ? payload.new : o)));
+            notifyOrderUpdate(payload.new);
           }
         })
         .subscribe();
@@ -668,17 +766,24 @@ export default function App() {
   };
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    let updatedObj = null;
     setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: newStatus,
-              confirmed_at: newStatus === 'confirmed' ? new Date().toISOString() : o.confirmed_at
-            }
-          : o
-      )
+      prev.map((o) => {
+        if (o.id === orderId) {
+          updatedObj = {
+            ...o,
+            status: newStatus,
+            confirmed_at: newStatus === 'confirmed' ? new Date().toISOString() : o.confirmed_at
+          };
+          return updatedObj;
+        }
+        return o;
+      })
     );
+
+    if (updatedObj) {
+      notifyOrderUpdate(updatedObj);
+    }
 
     if (isSupabaseConfigured && currentUser) {
       await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
@@ -1209,6 +1314,21 @@ export default function App() {
                 onRevokeKey={handleRevokeKey}
               />
             )}
+            {/* Live Order Confirmation Toast Banner */}
+            {liveToast && (
+              <div className="fixed top-5 right-5 z-50 max-w-sm bg-card border border-emerald-500/50 rounded-2xl p-4 shadow-2xl space-y-1 animate-in slide-in-from-top-5">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-xs font-heading font-extrabold text-emerald-500 flex items-center gap-1.5">
+                    <span>{liveToast.title}</span>
+                  </h4>
+                  <span className="text-[10px] text-muted-foreground">{liveToast.time}</span>
+                </div>
+                <p className="text-xs text-foreground font-medium">{liveToast.message}</p>
+              </div>
+            )}
+
+            {/* Push Notification Permission Component */}
+            <PushNotificationPrompt merchantId={merchant?.id} />
           </ErrorBoundary>
         </DashboardLayout>
       </ErrorBoundary>
