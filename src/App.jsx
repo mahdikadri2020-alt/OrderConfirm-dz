@@ -16,6 +16,7 @@ import ApiKeysTab from './components/dashboard/ApiKeysTab';
 import AccountStatusPage from './components/auth/AccountStatusPage';
 import AdminPendingMerchantsTab from './components/admin/AdminPendingMerchantsTab';
 import PushNotificationPrompt from './components/common/PushNotificationPrompt';
+import PwaInstallPrompt from './components/common/PwaInstallPrompt';
 
 // Admin Components & Mock Data
 import AdminDashboardLayout from './components/admin/AdminDashboardLayout';
@@ -1236,8 +1237,9 @@ export default function App() {
         onAuthSuccess={handleAuthSuccess}
       />
 
-      {/* Web Push Notifications Prompt */}
+      {/* Web Push Notifications Prompt & Native PWA Install Bar */}
       <PushNotificationPrompt merchantId={merchant?.id} />
+      <PwaInstallPrompt />
     </div>
   );
 }

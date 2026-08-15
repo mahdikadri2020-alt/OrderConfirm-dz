@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Check, Save, BellRing, PhoneCall } from 'lucide-react';
+import { Settings, Check, Save, BellRing, PhoneCall, Smartphone, Download } from 'lucide-react';
 
 export default function SettingsTab({ merchant = {}, onSaveSettings }) {
   const [businessName, setBusinessName] = useState(merchant.business_name || '');
@@ -37,6 +37,41 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
         <p className="text-xs text-muted-foreground mt-0.5">
           Gérez les informations de votre boutique, l'activation des relances WhatsApp et le délai de suivi.
         </p>
+      </div>
+
+      {/* PWA Mobile App Install Card */}
+      <div className="max-w-3xl bg-gradient-to-r from-accent/15 via-emerald-500/10 to-transparent border border-accent/30 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="h-11 w-11 rounded-2xl bg-accent text-white flex items-center justify-center shrink-0 shadow-md">
+            <Smartphone className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-xs font-heading font-extrabold text-foreground flex items-center gap-1.5">
+              تطبيق الهواتف الذكية (OrderConfirm Mobile App) 📱
+            </h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              ثبت التطبيق على هاتفك ليعمل كأي تطبيق عادي بدون متصفح مع الإشعارات الفورية.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              const installBtn = document.querySelector('button[class*="Installer Application"]') || document.querySelector('button[class*="تثبيت التطبيق"]');
+              if (installBtn) {
+                installBtn.click();
+              } else {
+                alert("انقر على شريط التثبيت الأخضر أعلى الشاشة أو اختر 'إضافة إلى الشاشة الرئيسية (Sur l'écran d'accueil)' في هاتفك لتثبيت التطبيق فوراً!");
+              }
+            }
+          }}
+          className="w-full sm:w-auto px-4 py-2.5 bg-accent text-white hover:bg-accent/90 rounded-2xl text-xs font-heading font-bold shadow-sm flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer"
+        >
+          <Download className="h-4 w-4" />
+          <span>تثبيت التطبيق على الهاتف ⚡</span>
+        </button>
       </div>
 
       <div className="max-w-3xl bg-background rounded-3xl p-6 border border-border/80 shadow-xs space-y-6">
