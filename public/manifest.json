@@ -1,12 +1,18 @@
 {
+  "id": "dz.orderconfirm.app",
   "name": "OrderConfirm ✦ Confirmation WhatsApp COD",
   "short_name": "OrderConfirm",
   "description": "Plateforme SaaS de confirmation automatique de commandes COD par WhatsApp",
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#071217",
   "theme_color": "#10B981",
+  "dir": "ltr",
+  "lang": "fr",
+  "prefer_related_applications": false,
+  "categories": ["business", "utilities"],
   "icons": [
     {
       "src": "/icon-192.png",
