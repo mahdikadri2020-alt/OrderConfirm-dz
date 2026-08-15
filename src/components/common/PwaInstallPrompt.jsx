@@ -19,6 +19,11 @@ export default function PwaInstallPrompt() {
       return;
     }
 
+    // Check global early prompt
+    if (window.deferredPwaPrompt) {
+      setDeferredPrompt(window.deferredPwaPrompt);
+    }
+
     // Detect iOS
     const ua = window.navigator.userAgent.toLowerCase();
     const isIosDevice = /iphone|ipad|ipod/.test(ua);
@@ -27,6 +32,7 @@ export default function PwaInstallPrompt() {
     // Capture Android/Chrome beforeinstallprompt event
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
+      window.deferredPwaPrompt = e;
       setDeferredPrompt(e);
       setShowPrompt(true);
     };
@@ -37,6 +43,7 @@ export default function PwaInstallPrompt() {
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setShowPrompt(false);
+      window.deferredPwaPrompt = null;
       setDeferredPrompt(null);
     };
 
@@ -49,18 +56,22 @@ export default function PwaInstallPrompt() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (deferredPrompt) {
+    const activePrompt = window.deferredPwaPrompt || deferredPrompt;
+    if (activePrompt) {
       try {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
+        activePrompt.prompt();
+        const { outcome } = await activePrompt.userChoice;
         if (outcome === 'accepted') {
           setIsInstalled(true);
           setShowPrompt(false);
         }
+        window.deferredPwaPrompt = null;
         setDeferredPrompt(null);
       } catch (err) {
-        setShowInstallGuide(true);
+        if (isIos) setShowInstallGuide(true);
       }
+    } else if (isIos) {
+      setShowInstallGuide(true);
     } else {
       setShowInstallGuide(true);
     }
@@ -89,7 +100,7 @@ export default function PwaInstallPrompt() {
         </button>
       </div>
 
-      {/* Step-by-step Installation Guide Modal (Mobile Only) */}
+      {/* Step-by-step Installation Guide Modal (Only if browser blocks automatic prompt) */}
       {showInstallGuide && (
         <div className="md:hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end justify-center p-4">
           <div className="bg-card border border-border rounded-3xl p-6 max-w-md w-full space-y-4 font-body animate-in zoom-in-95">

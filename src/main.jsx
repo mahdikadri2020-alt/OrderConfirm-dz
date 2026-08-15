@@ -9,16 +9,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>,
 )
 
-// Register PWA Service Worker
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(
-      (reg) => console.log('OrderConfirm ServiceWorker registered: ', reg.scope),
-      (err) => console.warn('OrderConfirm ServiceWorker registration failed: ', err)
-    );
-  });
-} else if ('serviceWorker' in navigator) {
+// Register PWA Service Worker immediately on startup
+if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(
-    (reg) => console.log('OrderConfirm ServiceWorker registered (Dev): ', reg.scope)
+    (reg) => console.log('OrderConfirm ServiceWorker active: ', reg.scope),
+    (err) => console.warn('OrderConfirm ServiceWorker error: ', err)
   );
 }
