@@ -31,20 +31,13 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
     const activePrompt = window.deferredPwaPrompt;
     if (activePrompt) {
       try {
-        activePrompt.prompt();
-        const { outcome } = await activePrompt.userChoice;
-        if (outcome === 'accepted') {
+        await activePrompt.prompt();
+        const choice = await activePrompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
           window.deferredPwaPrompt = null;
         }
       } catch (err) {
-        alert("Appuyez sur les options du navigateur (⋮) puis choisissez 'Installer l'application'.");
-      }
-    } else {
-      const ua = window.navigator.userAgent.toLowerCase();
-      if (/iphone|ipad|ipod/.test(ua)) {
-        alert("Pour installer sur iPhone:\n1. Appuyez sur le bouton Partager (Share ⎋) en bas de Safari.\n2. Sélectionnez 'Sur l'écran d'accueil'.");
-      } else {
-        alert("Pour installer l'application:\nAppuyez sur les options du navigateur (⋮) puis choisissez 'Installer l'application'.");
+        console.warn('PWA prompt execution:', err);
       }
     }
   };
