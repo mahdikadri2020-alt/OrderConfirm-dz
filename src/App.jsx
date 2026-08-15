@@ -220,9 +220,16 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Restore & Persist Supabase Session on Mount (Facebook-style Persistent Session)
+  // Restore & Persist Supabase Session on Mount (Facebook-style Persistent Session for Installed App)
   useEffect(() => {
     if (isSupabaseConfigured) {
+      const isStandaloneApp = typeof window !== 'undefined' && (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://')
+      );
+
       // 1. Get local persistent session immediately
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
@@ -232,7 +239,8 @@ export default function App() {
           if (isAdmin) {
             setView('admin');
             window.history.replaceState({}, '', '/admin-oc-2026');
-          } else if (currentPath === '/' || currentPath === '' || currentPath.includes('connexion') || currentPath.includes('landing')) {
+          } else if (isStandaloneApp || currentPath.includes('app')) {
+            // ONLY auto-redirect to app if opened inside installed PWA standalone app or explicit /app path
             setView('app');
             window.history.replaceState({}, '', '/app');
           }
