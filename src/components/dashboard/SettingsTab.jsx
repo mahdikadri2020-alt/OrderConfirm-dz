@@ -9,6 +9,7 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
   const [retryHours, setRetryHours] = useState(String(merchant.reminder_delay_hours ?? '2'));
   const [maxRemindersCount, setMaxRemindersCount] = useState(String(merchant.max_reminders_count ?? '2'));
   const [followUpDelayHours, setFollowUpDelayHours] = useState(String(merchant.follow_up_delay_hours ?? '2'));
+  const [timeoutStatus, setTimeoutStatus] = useState(merchant.timeout_status || 'needs_follow_up');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleSubmit = (e) => {
@@ -21,7 +22,8 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
         reminder_delay_hours: Number(retryHours),
         reminders_enabled: remindersEnabled,
         max_reminders_count: Number(maxRemindersCount),
-        follow_up_delay_hours: Number(followUpDelayHours)
+        follow_up_delay_hours: Number(followUpDelayHours),
+        timeout_status: timeoutStatus
       });
     }
     setSaveSuccess(true);
@@ -179,8 +181,8 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
             {/* Section 4: Follow-up Status Transition Delay */}
             <div className="pt-3">
               <label className="block text-xs font-heading font-semibold text-foreground mb-1.5 flex items-center justify-between">
-                <span>Délai d'attente avant passage en "📞 À rappeler" (heures)</span>
-                <span className="text-[10px] font-bold text-orange-600 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">Passage en À rappeler</span>
+                <span>Délai d'attente avant changement de statut (heures)</span>
+                <span className="text-[10px] font-bold text-orange-600 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Expiration du délai</span>
               </label>
               <select
                 value={followUpDelayHours}
@@ -199,9 +201,29 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
                 <PhoneCall className="h-3 w-3 text-orange-600 shrink-0" />
                 <span>
                   {remindersEnabled
-                    ? 'Temps à attendre APPRÈS la dernière relance sans réponse pour faire passer la commande en "📞 À rappeler".'
-                    : 'Temps à attendre APPRÈS le 1er message sans réponse pour faire passer la commande en "📞 À rappeler".'}
+                    ? 'Temps à attendre APPRÈS la dernière relance sans réponse pour faire passer la commande au statut choisi ci-dessous.'
+                    : 'Temps à attendre APPRÈS le 1er message sans réponse pour faire passer la commande au statut choisi ci-dessous.'}
                 </span>
+              </p>
+            </div>
+
+            {/* Section 5: Timeout Status Choice */}
+            <div className="pt-3 border-t border-border/60">
+              <label className="block text-xs font-heading font-semibold text-foreground mb-1.5 flex items-center justify-between">
+                <span>Statut automatique attribué en cas de non-réponse du زبون</span>
+                <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">Statut final</span>
+              </label>
+              <select
+                value={timeoutStatus}
+                onChange={(e) => setTimeoutStatus(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs font-heading font-semibold text-foreground focus:ring-2 focus:ring-ring font-heading font-bold"
+              >
+                <option value="needs_follow_up">📞 À rappeler / وجب الاتصال بالزبون (Recommandé)</option>
+                <option value="no_reply">🚫 Sans réponse / لم يرد (Marquer comme non joignable)</option>
+                <option value="rejected">❌ Annulée / ملغاة (Marquer comme annulée)</option>
+              </select>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Choisissez vers quelle حالة تتحول الطلبية تلقائياً عندما لا يجيب الزبون بعد انتهاء الوقت والتذكيرات.
               </p>
             </div>
           </div>

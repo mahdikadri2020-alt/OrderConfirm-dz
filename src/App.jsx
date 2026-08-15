@@ -779,7 +779,8 @@ export default function App() {
           reminder_delay_hours: updatedMerchant.reminder_delay_hours ?? 2,
           reminders_enabled: updatedMerchant.reminders_enabled ?? true,
           max_reminders_count: updatedMerchant.max_reminders_count ?? 2,
-          follow_up_delay_hours: updatedMerchant.follow_up_delay_hours ?? 2
+          follow_up_delay_hours: updatedMerchant.follow_up_delay_hours ?? 2,
+          timeout_status: updatedMerchant.timeout_status ?? 'needs_follow_up'
         })
         .eq('id', merchant.id);
     }
