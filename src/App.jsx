@@ -15,6 +15,7 @@ import ApiKeysTab from './components/dashboard/ApiKeysTab';
 
 import AccountStatusPage from './components/auth/AccountStatusPage';
 import AdminPendingMerchantsTab from './components/admin/AdminPendingMerchantsTab';
+import PushNotificationPrompt from './components/common/PushNotificationPrompt';
 
 // Admin Components & Mock Data
 import AdminDashboardLayout from './components/admin/AdminDashboardLayout';
@@ -110,33 +111,22 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Restore & Server-Validate Supabase Session on Mount
+  // Restore & Persist Supabase Session on Mount
   useEffect(() => {
     if (isSupabaseConfigured) {
-      // Validate token with Supabase backend server (getUser makes an API request to Supabase Auth)
-      supabase.auth.getUser().then(({ data, error }) => {
-        if (error || !data?.user) {
-          // Token is invalid, user was deleted on backend, or expired -> force logout & clear localStorage
-          supabase.auth.signOut();
-          setCurrentUser(null);
-          localStorage.clear();
-        } else {
-          setCurrentUser(data.user);
+      // 1. Get local persistent session immediately
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setCurrentUser(session.user);
         }
       });
 
-      const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session?.user) {
-          const { data: userData, error: userError } = await supabase.auth.getUser();
-          if (userError || !userData?.user) {
-            await supabase.auth.signOut();
-            setCurrentUser(null);
-            localStorage.clear();
-          } else {
-            setCurrentUser(userData.user);
-          }
-        } else {
+      // 2. Listen to Auth State Changes
+      const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT') {
           setCurrentUser(null);
+        } else if (session?.user) {
+          setCurrentUser(session.user);
         }
       });
 
@@ -151,15 +141,6 @@ export default function App() {
     if (isSupabaseConfigured && currentUser) {
       const fetchData = async () => {
         try {
-          // Verify user exists on backend before doing anything
-          const { data: authCheck, error: authErr } = await supabase.auth.getUser();
-          if (authErr || !authCheck?.user) {
-            await supabase.auth.signOut();
-            setCurrentUser(null);
-            localStorage.clear();
-            setView('landing');
-            return;
-          }
 
           // 1. Fetch current merchant profile
           const { data: fetchedMerchant } = await supabase
@@ -1254,6 +1235,9 @@ export default function App() {
         initialMode={authMode}
         onAuthSuccess={handleAuthSuccess}
       />
+
+      {/* Web Push Notifications Prompt */}
+      <PushNotificationPrompt merchantId={merchant?.id} />
     </div>
   );
 }

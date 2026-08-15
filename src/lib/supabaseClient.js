@@ -11,7 +11,15 @@ const supabasePublishableKey =
 
 export const isSupabaseConfigured = true;
 
-export const supabase = createClient(supabaseUrl, supabasePublishableKey);
+export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storageKey: 'orderconfirm-auth-session'
+  }
+});
 
 const now = Date.now();
 const DAY = 86400000;
