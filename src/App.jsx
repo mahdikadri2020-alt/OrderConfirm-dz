@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/landing/Navbar';
 import Hero from './components/landing/Hero';
 import FeaturesSection from './components/landing/FeaturesSection';
@@ -187,6 +187,55 @@ export default function App() {
       }
     }
   };
+
+  const previousOrdersRef = useRef([]);
+
+  // Auto-Detect Order Status Changes (e.g. Confirmed by WhatsApp / n8n / Webhook)
+  useEffect(() => {
+    if (orders && orders.length > 0) {
+      const prevMap = new Map(previousOrdersRef.current.map(o => [String(o.id), o.status]));
+      
+      orders.forEach(order => {
+        const orderIdStr = String(order.id);
+        const prevStatus = prevMap.get(orderIdStr);
+
+        if (prevStatus && prevStatus !== order.status) {
+          if (['confirmed', 'rejected', 'needs_follow_up'].includes(order.status)) {
+            notifyOrderUpdate(order);
+          }
+        }
+      });
+
+      previousOrdersRef.current = orders.map(o => ({ id: String(o.id), status: o.status }));
+    }
+  }, [orders]);
+
+  // Periodic Background Order Synchronization (Every 10 Seconds)
+  useEffect(() => {
+    if (isSupabaseConfigured && currentUser && merchant?.id && view === 'app') {
+      const interval = setInterval(async () => {
+        try {
+          const { data: latestOrders } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('merchant_id', merchant.id)
+            .order('created_at', { ascending: false });
+
+          if (latestOrders && latestOrders.length > 0) {
+            setOrders((prev) => {
+              const isDifferent = JSON.stringify(prev.map(o => ({ id: o.id, status: o.status }))) !== 
+                                 JSON.stringify(latestOrders.map(o => ({ id: o.id, status: o.status })));
+              return isDifferent ? latestOrders : prev;
+            });
+          }
+        } catch (e) {
+          // Ignore network glitch during poll
+        }
+      }, 10000);
+
+      return () => clearInterval(interval);
+    }
+  }, [currentUser, merchant?.id, view]);
   const [platformStats, setPlatformStats] = useState({
     totalMerchants: 0,
     newMerchantsThisWeek: 0,
