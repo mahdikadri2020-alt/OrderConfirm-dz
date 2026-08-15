@@ -37,14 +37,14 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
           window.deferredPwaPrompt = null;
         }
       } catch (err) {
-        alert("انقر على خيارات المتصفح (⋮) ثم اختر 'تثبيت التطبيق' أو 'إضافة إلى الشاشة الرئيسية'.");
+        alert("Appuyez sur les options du navigateur (⋮) puis choisissez 'Installer l'application'.");
       }
     } else {
       const ua = window.navigator.userAgent.toLowerCase();
       if (/iphone|ipad|ipod/.test(ua)) {
-        alert("للتثبيت على iPhone:\n1. اضغط على زر مشاركة (Share ⎋) في أسفل Safari.\n2. اختر 'إضافة إلى الشاشة الرئيسية (Add to Home Screen)'.");
+        alert("Pour installer sur iPhone:\n1. Appuyez sur le bouton Partager (Share ⎋) en bas de Safari.\n2. Sélectionnez 'Sur l'écran d'accueil'.");
       } else {
-        alert("لتثبيت التطبيق:\nاضغط على خيارات المتصفح (⋮) ثم اختر 'تثبيت التطبيق (Install App)' أو 'إضافة إلى الشاشة الرئيسية'.");
+        alert("Pour installer l'application:\nAppuyez sur les options du navigateur (⋮) puis choisissez 'Installer l'application'.");
       }
     }
   };
@@ -77,7 +77,7 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
               className="rounded-full px-5 py-2.5 text-sm font-heading font-extrabold bg-white text-slate-900 hover:bg-slate-50 border border-slate-200/90 transition-all shadow-sm flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
             >
               <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
-              <span>تنزيل التطبيق ⚡</span>
+              <span>Télécharger l'app ⚡</span>
             </button>
 
             <button
@@ -157,7 +157,7 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
               className="w-full py-3.5 bg-white text-slate-900 border border-slate-300 rounded-2xl text-xs font-heading font-extrabold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
-              <span>تنزيل التطبيق ⚡ (Install App)</span>
+              <span>Télécharger l'application ⚡</span>
             </button>
 
             <button

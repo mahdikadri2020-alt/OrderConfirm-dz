@@ -47,10 +47,10 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
           </div>
           <div>
             <h3 className="text-xs font-heading font-extrabold text-foreground flex items-center gap-1.5">
-              تطبيق الهواتف الذكية (OrderConfirm Mobile App) 📱
+              Application Mobile (OrderConfirm PWA) 📱
             </h3>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              ثبت التطبيق على هاتفك ليعمل كأي تطبيق عادي بدون متصفح مع الإشعارات الفورية.
+              Installez l'application sur votre téléphone pour un accès rapide et des notifications en temps réel.
             </p>
           </div>
         </div>
@@ -59,18 +59,18 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
           type="button"
           onClick={() => {
             if (typeof window !== 'undefined') {
-              const installBtn = document.querySelector('button[class*="Installer Application"]') || document.querySelector('button[class*="تثبيت التطبيق"]');
-              if (installBtn) {
-                installBtn.click();
+              const activePrompt = window.deferredPwaPrompt;
+              if (activePrompt) {
+                activePrompt.prompt();
               } else {
-                alert("انقر على شريط التثبيت الأخضر أعلى الشاشة أو اختر 'إضافة إلى الشاشة الرئيسية (Sur l'écran d'accueil)' في هاتفك لتثبيت التطبيق فوراً!");
+                alert("Appuyez sur les options de votre navigateur (⋮) puis choisissez 'Installer l'application'.");
               }
             }
           }}
           className="w-full sm:w-auto px-4 py-2.5 bg-accent text-white hover:bg-accent/90 rounded-2xl text-xs font-heading font-bold shadow-sm flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer"
         >
           <Download className="h-4 w-4" />
-          <span>تثبيت التطبيق على الهاتف ⚡</span>
+          <span>Télécharger l'application ⚡</span>
         </button>
       </div>
 
