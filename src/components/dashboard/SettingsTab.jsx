@@ -12,6 +12,84 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
   const [timeoutStatus, setTimeoutStatus] = useState(merchant.timeout_status || 'needs_follow_up');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const handleTestNotifications = async () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        const ctx = new AudioContext();
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
+        }
+        const now = ctx.currentTime;
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, now);
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.3);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880, now + 0.15);
+        gain2.gain.setValueAtTime(0.4, now + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.15);
+        osc2.stop(now + 0.6);
+      }
+    } catch (e) {
+      console.warn('Audio test notice:', e);
+    }
+
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      let currentPerm = Notification.permission;
+      if (currentPerm !== 'granted') {
+        currentPerm = await Notification.requestPermission();
+      }
+
+      if (currentPerm === 'granted') {
+        try {
+          if ('serviceWorker' in navigator) {
+            const reg = await navigator.serviceWorker.ready;
+            if (reg.active) {
+              reg.active.postMessage({
+                type: 'SHOW_NOTIFICATION',
+                title: '⚡ Test Réussi !',
+                body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
+                icon: '/official-logo-192.png',
+                url: '/app'
+              });
+            }
+            reg.showNotification('⚡ Test Réussi !', {
+              body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
+              icon: '/official-logo-192.png',
+              badge: '/official-logo-192.png',
+              vibrate: [200, 100, 200],
+              data: { url: '/app' }
+            });
+          } else {
+            new Notification('⚡ Test Réussi !', {
+              body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !',
+              icon: '/official-logo-192.png'
+            });
+          }
+        } catch (e) {
+          console.warn('Test notification execution notice:', e);
+        }
+      } else {
+        alert("⚠️ الإشعارات محظورة في متصفحك! يرجى الذهاب إلى إعدادات المتصفح -> إعدادات المواقع (Site Settings) -> السماح بالإشعارات لـ OrderConfirm.");
+      }
+    } else {
+      alert("⚠️ متصفحك الحالي لا يدعم إشعارات الـ Web Push.");
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (onSaveSettings) {
@@ -180,39 +258,10 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
 
               <button
                 type="button"
-                onClick={async () => {
-                  try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContext) {
-                      const ctx = new AudioContext();
-                      if (ctx.state === 'suspended') await ctx.resume();
-                      const now = ctx.currentTime;
-                      const osc1 = ctx.createOscillator();
-                      const gain1 = ctx.createGain();
-                      osc1.type = 'sine';
-                      osc1.frequency.setValueAtTime(587.33, now);
-                      gain1.gain.setValueAtTime(0.3, now);
-                      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                      osc1.connect(gain1);
-                      gain1.connect(ctx.destination);
-                      osc1.start(now);
-                      osc1.stop(now + 0.3);
-                    }
-                  } catch (e) {}
-
-                  if (typeof window !== 'undefined' && 'Notification' in window) {
-                    let perm = Notification.permission;
-                    if (perm !== 'granted') perm = await Notification.requestPermission();
-                    if (perm === 'granted') {
-                      new Notification('⚡ Test Réussi !', { body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !', icon: '/official-logo-192.png' });
-                    } else {
-                      alert("⚠️ الإشعارات محظورة في متصفحك! يرجى الذهاب إلى إعدادات المتصفح -> إعدادات المواقع (Site Settings) -> السماح بالإشعارات لـ OrderConfirm.");
-                    }
-                  }
-                }}
-                className="px-3 py-2 bg-amber-500 text-white rounded-xl text-xs font-heading font-bold hover:bg-amber-600 transition-all cursor-pointer shrink-0 shadow-xs"
+                onClick={handleTestNotifications}
+                className="px-3.5 py-2 bg-amber-500 text-white rounded-xl text-xs font-heading font-extrabold hover:bg-amber-600 transition-all cursor-pointer shrink-0 shadow-xs"
               >
-                Tester 🔔
+                Tester les Notifications 🔔
               </button>
             </div>
 
