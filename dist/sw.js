@@ -1,13 +1,12 @@
 // OrderConfirm PWA Service Worker & Web Push Handler
-const CACHE_NAME = 'orderconfirm-v6';
+const CACHE_NAME = 'orderconfirm-v7';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/pwa-icon-192.png',
-  '/pwa-icon-512.png',
-  '/pwa-icon-192.svg',
-  '/pwa-icon-512.svg'
+  '/official-logo.jpg',
+  '/official-logo-192.jpg',
+  '/official-logo-512.jpg'
 ];
 
 // Install Event: Cache Core Assets
