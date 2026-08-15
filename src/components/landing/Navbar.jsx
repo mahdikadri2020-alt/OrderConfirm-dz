@@ -54,7 +54,7 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
     <header className="w-full z-50 transition-all duration-300 relative bg-background/95 backdrop-blur-md border-b border-border/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-20 py-3.5 sm:py-5 font-body">
         
-        {/* DESKTOP NAVBAR (md:flex) */}
+        {/* DESKTOP NAVBAR (md:flex) - HIDDEN DOWNLOAD BUTTON ON PC */}
         <div className="hidden md:flex items-center justify-between">
           {/* Left: Logo */}
           <div 
@@ -73,18 +73,8 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
             <a href="#pricing" className="hover:text-foreground transition-colors">Tarifs</a>
           </nav>
 
-          {/* Right: CTA Actions */}
+          {/* Right: CTA Actions (PC: Se connecter & Essai gratuit ONLY) */}
           <div className="flex items-center gap-3">
-            {!isStandalone && (
-              <button
-                onClick={handleInstallApp}
-                className="rounded-full px-5 py-2.5 text-sm font-heading font-extrabold bg-white text-slate-900 hover:bg-slate-50 border border-slate-200/90 transition-all shadow-sm flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
-              >
-                <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
-                <span>Télécharger l'app ⚡</span>
-              </button>
-            )}
-
             <button
               onClick={handleLoginClick}
               className="rounded-full px-5 py-2.5 text-sm font-heading font-bold text-foreground hover:bg-secondary transition-all"
@@ -102,7 +92,7 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
           </div>
         </div>
 
-        {/* MOBILE NAVBAR (< md / md:hidden) */}
+        {/* MOBILE NAVBAR (< md / md:hidden) - VISIBLE ONLY ON MOBILE PHONES */}
         <div className="flex md:hidden items-center justify-between w-full">
           {/* Left: Compact Mobile Logo */}
           <div 
@@ -115,12 +105,12 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
             </span>
           </div>
 
-          {/* Right: Actions */}
+          {/* Right: Actions (Mobile Download Button + Menu) */}
           <div className="flex items-center gap-2">
             {!isStandalone && (
               <button
                 onClick={handleInstallApp}
-                className="rounded-full px-3 py-1.5 text-xs font-heading font-bold bg-white text-slate-900 border border-slate-200 shadow-xs flex items-center gap-1 cursor-pointer active:scale-95"
+                className="rounded-full px-3.5 py-1.5 text-xs font-heading font-extrabold bg-white text-slate-900 border border-slate-200 shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
               >
                 <Download className="h-3.5 w-3.5 text-emerald-600 stroke-[2.5]" />
                 <span>Télécharger ⚡</span>
