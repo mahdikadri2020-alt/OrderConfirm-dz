@@ -39,8 +39,8 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
         </p>
       </div>
 
-      {/* PWA Mobile App Install Card */}
-      <div className="max-w-3xl bg-gradient-to-r from-accent/15 via-emerald-500/10 to-transparent border border-accent/30 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* PWA Mobile App Install Card (Mobile Only) */}
+      <div className="md:hidden max-w-3xl bg-gradient-to-r from-accent/15 via-emerald-500/10 to-transparent border border-accent/30 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="h-11 w-11 rounded-2xl bg-accent text-white flex items-center justify-center shrink-0 shadow-md">
             <Smartphone className="h-6 w-6" />

@@ -68,45 +68,28 @@ export default function PwaInstallPrompt() {
 
   return (
     <>
-      {/* Floating Eye-Catching Mobile Install Bar */}
-      <div className="fixed top-3 left-3 right-3 z-50 md:top-4 md:right-4 md:left-auto md:max-w-md bg-gradient-to-r from-accent to-emerald-600 text-white rounded-3xl p-4 shadow-2xl border border-white/20 font-body animate-in slide-in-from-top-5 duration-300">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
-              <Smartphone className="h-6 w-6 text-white animate-bounce" />
-            </div>
-            <div>
-              <h4 className="text-xs font-heading font-extrabold text-white flex items-center gap-1">
-                تثبيت تطبيق OrderConfirm 📱
-              </h4>
-              <p className="text-[11px] text-white/90 font-medium">
-                قم بتثبيت التطبيق على هاتفك للوصول السريع والإشعارات.
-              </p>
-            </div>
-          </div>
+      {/* Mobile ONLY (< 768px - Hidden on PC/Desktop md:hidden) Clean Pure White Button */}
+      <div className="md:hidden fixed top-3 left-3 right-3 z-50 flex items-center justify-between gap-2 font-body animate-in slide-in-from-top-5 duration-300">
+        <button
+          onClick={handleInstallClick}
+          className="flex-1 py-3 px-4 bg-white text-slate-900 hover:bg-slate-50 border border-slate-200/90 rounded-2xl text-xs font-heading font-extrabold transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+        >
+          <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
+          <span>تثبيت التطبيق الآن ⚡ (Install App)</span>
+        </button>
 
-          <button
-            onClick={() => setShowPrompt(false)}
-            className="text-white/80 hover:text-white p-1 rounded-lg transition-colors shrink-0"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="mt-3 flex items-center gap-2">
-          <button
-            onClick={handleInstallClick}
-            className="w-full py-3 bg-white text-accent hover:bg-emerald-50 rounded-2xl text-xs font-heading font-extrabold transition-all shadow-md flex items-center justify-center gap-2"
-          >
-            <Download className="h-4 w-4 stroke-[2.5]" />
-            <span>تثبيت التطبيق الآن ⚡ (Install App)</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setShowPrompt(false)}
+          className="h-10 w-10 bg-white text-slate-500 hover:text-slate-900 border border-slate-200/90 rounded-2xl flex items-center justify-center shrink-0 shadow-xl transition-all active:scale-95"
+          title="إغلاق"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
-      {/* iOS Step-by-step Installation Modal */}
+      {/* iOS Step-by-step Installation Modal (Mobile Only) */}
       {showIosGuide && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+        <div className="md:hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end justify-center p-4">
           <div className="bg-card border border-border rounded-3xl p-6 max-w-md w-full space-y-4 font-body animate-in zoom-in-95">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-heading font-extrabold text-foreground flex items-center gap-2">
