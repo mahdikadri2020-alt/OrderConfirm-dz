@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, Menu, X, Download } from 'lucide-react';
 import Logo, { LogoIcon } from '../common/Logo';
 
 export default function Navbar({ onOpenAuth, onGoToApp }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      setIsStandalone(standalone);
+    }
+  }, []);
 
   const handleNavClick = (anchor) => {
     setMobileMenuOpen(false);
@@ -65,13 +73,15 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
 
           {/* Right: CTA Actions */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleInstallApp}
-              className="rounded-full px-5 py-2.5 text-sm font-heading font-extrabold bg-white text-slate-900 hover:bg-slate-50 border border-slate-200/90 transition-all shadow-sm flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
-            >
-              <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
-              <span>Télécharger l'app ⚡</span>
-            </button>
+            {!isStandalone && (
+              <button
+                onClick={handleInstallApp}
+                className="rounded-full px-5 py-2.5 text-sm font-heading font-extrabold bg-white text-slate-900 hover:bg-slate-50 border border-slate-200/90 transition-all shadow-sm flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
+              >
+                <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
+                <span>Télécharger l'app ⚡</span>
+              </button>
+            )}
 
             <button
               onClick={() => onOpenAuth('login')}
@@ -142,16 +152,18 @@ export default function Navbar({ onOpenAuth, onGoToApp }) {
 
           {/* Vertically Stacked Mobile Buttons */}
           <div className="space-y-2.5 pt-1">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleInstallApp();
-              }}
-              className="w-full py-3.5 bg-white text-slate-900 border border-slate-300 rounded-2xl text-xs font-heading font-extrabold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-            >
-              <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
-              <span>Télécharger l'application ⚡</span>
-            </button>
+            {!isStandalone && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleInstallApp();
+                }}
+                className="w-full py-3.5 bg-white text-slate-900 border border-slate-300 rounded-2xl text-xs font-heading font-extrabold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Download className="h-4 w-4 text-emerald-600 stroke-[2.5]" />
+                <span>Télécharger l'application ⚡</span>
+              </button>
+            )}
 
             <button
               onClick={handleLoginClick}

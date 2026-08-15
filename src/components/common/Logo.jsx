@@ -1,11 +1,9 @@
 import React from 'react';
 
 export function LogoIcon({ className = "h-12 w-auto", size }) {
-  const style = size ? { height: `${size}px`, width: 'auto' } : undefined;
+  const style = size ? { height: `${size}px`, width: `${size}px` } : undefined;
   return (
     <svg 
-      width="200" 
-      height="200" 
       viewBox="0 0 200 200" 
       xmlns="http://www.w3.org/2000/svg"
       className={`shrink-0 transition-transform ${className}`}
