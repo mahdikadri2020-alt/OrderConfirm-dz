@@ -1237,9 +1237,8 @@ export default function App() {
         onAuthSuccess={handleAuthSuccess}
       />
 
-      {/* Web Push Notifications Prompt & Native PWA Install Bar */}
+      {/* Web Push Notifications Prompt */}
       <PushNotificationPrompt merchantId={merchant?.id} />
-      <PwaInstallPrompt />
     </div>
   );
 }
