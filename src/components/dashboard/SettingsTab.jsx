@@ -164,6 +164,58 @@ export default function SettingsTab({ merchant = {}, onSaveSettings }) {
               </label>
             </div>
 
+            {/* Test Notifications Tool Card */}
+            <div className="flex items-center justify-between bg-amber-500/10 p-4 rounded-2xl border border-amber-500/20">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-amber-500/20 text-amber-600 flex items-center justify-center font-bold">
+                  <BellRing className="h-4 w-4 text-amber-500 animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-heading font-extrabold text-foreground">Test des Notifications Push & Son</h4>
+                  <p className="text-[11px] text-muted-foreground">
+                    Vérifiez et autorisez les notifications sur votre téléphone ou متصفح.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                      const ctx = new AudioContext();
+                      if (ctx.state === 'suspended') await ctx.resume();
+                      const now = ctx.currentTime;
+                      const osc1 = ctx.createOscillator();
+                      const gain1 = ctx.createGain();
+                      osc1.type = 'sine';
+                      osc1.frequency.setValueAtTime(587.33, now);
+                      gain1.gain.setValueAtTime(0.3, now);
+                      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                      osc1.connect(gain1);
+                      gain1.connect(ctx.destination);
+                      osc1.start(now);
+                      osc1.stop(now + 0.3);
+                    }
+                  } catch (e) {}
+
+                  if (typeof window !== 'undefined' && 'Notification' in window) {
+                    let perm = Notification.permission;
+                    if (perm !== 'granted') perm = await Notification.requestPermission();
+                    if (perm === 'granted') {
+                      new Notification('⚡ Test Réussi !', { body: '🎉 Les notifications fonctionnent parfaitement sur votre appareil !', icon: '/official-logo-192.png' });
+                    } else {
+                      alert("⚠️ الإشعارات محظورة في متصفحك! يرجى الذهاب إلى إعدادات المتصفح -> إعدادات المواقع (Site Settings) -> السماح بالإشعارات لـ OrderConfirm.");
+                    }
+                  }
+                }}
+                className="px-3 py-2 bg-amber-500 text-white rounded-xl text-xs font-heading font-bold hover:bg-amber-600 transition-all cursor-pointer shrink-0 shadow-xs"
+              >
+                Tester 🔔
+              </button>
+            </div>
+
             {/* Custom Rules (Interval & Max Count) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
