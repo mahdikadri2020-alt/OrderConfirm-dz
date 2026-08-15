@@ -20,7 +20,7 @@ function createPngChunk(type, data) {
   return buf;
 }
 
-function createExactOfficialLogoPng(width, height) {
+function createPerfectOfficialLogoPng(width, height) {
   const sig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(width, 0);
@@ -67,10 +67,9 @@ function createExactOfficialLogoPng(width, height) {
       const dDot = Math.sqrt((x - dotX) * (x - dotX) + (y - dotY) * (y - dotY));
       const inDot = (dDot <= dotR);
 
-      let angleRad = Math.atan2(dy, dx);
-      let angleDeg = angleRad * (180 / Math.PI);
-      const isAngleInCArc = (angleDeg <= 25 || angleDeg >= -90);
-      const inCArc = (dist >= rInner && dist <= rOuter && isAngleInCArc);
+      const angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+      const isTopRightGap = (angleDeg > -90 && angleDeg < 25);
+      const inCArc = (dist >= rInner && dist <= rOuter && !isTopRightGap);
 
       if (inDot || inCArc) {
         rawData[pxOffset] = 0x10;
@@ -93,9 +92,9 @@ function createExactOfficialLogoPng(width, height) {
   return Buffer.concat([sig, ihdrChunk, idatChunk, iendChunk]);
 }
 
-fs.writeFileSync('public/logo-orderconfirm-192.png', createExactOfficialLogoPng(192, 192));
-fs.writeFileSync('public/logo-orderconfirm-512.png', createExactOfficialLogoPng(512, 512));
-fs.writeFileSync('public/logo-orderconfirm-maskable.png', createExactOfficialLogoPng(512, 512));
+fs.writeFileSync('public/pwa-icon-192.png', createPerfectOfficialLogoPng(192, 192));
+fs.writeFileSync('public/pwa-icon-512.png', createPerfectOfficialLogoPng(512, 512));
+fs.writeFileSync('public/pwa-icon-maskable.png', createPerfectOfficialLogoPng(512, 512));
 
 const pureSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="512" height="512">
   <circle cx="100" cy="100" r="92" fill="#071217" stroke="#16313B" stroke-width="2.5" />
@@ -104,7 +103,7 @@ const pureSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200
   <path d="M 60 120 A 53 53 0 0 0 120 151 A 53 53 0 0 0 148 122 A 11 11 0 0 0 128 113 A 31 31 0 0 1 78 110 Z" fill="#059669" opacity="0.8" />
 </svg>`;
 
-fs.writeFileSync('public/logo-orderconfirm-192.svg', pureSvgContent);
-fs.writeFileSync('public/logo-orderconfirm-512.svg', pureSvgContent);
+fs.writeFileSync('public/pwa-icon-192.svg', pureSvgContent);
+fs.writeFileSync('public/pwa-icon-512.svg', pureSvgContent);
 
-console.log('New brand logo files successfully created in public/');
+console.log('pwa-icon PNG and SVG files created successfully!');
