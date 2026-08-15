@@ -16,16 +16,16 @@ export function LogoIcon({ className = "h-12 w-auto", size }) {
       {/* Top-Right Separate Dot */}
       <circle cx="124" cy="74" r="14" fill="#10B981" />
 
-      {/* Main Stylized 'OC' Ring Monogram */}
+      {/* Main Stylized 'C' Ring Monogram */}
       <path 
         d="M 100 47 A 53 53 0 1 0 148 122 A 11 11 0 0 0 128 113 A 31 31 0 1 1 100 69 Z" 
         fill="#10B981" 
       />
 
-      {/* Ribbon Overlay for 3D Depth */}
+      {/* 3D Depth Overlay Ribbon */}
       <path 
         d="M 60 120 A 53 53 0 0 0 120 151 A 53 53 0 0 0 148 122 A 11 11 0 0 0 128 113 A 31 31 0 0 1 78 110 Z" 
-        fill="#059669"
+        fill="#059669" 
         opacity="0.8" 
       />
     </svg>
